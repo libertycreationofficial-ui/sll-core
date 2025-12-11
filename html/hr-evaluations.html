@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Star Little Luna CORE - 人事評価管理</title>
+  <style>
+    :root {
+      --sl-bg: #f9fbff;
+      --sl-gradient-from: #f5ddff;
+      --sl-gradient-to: #cbe8ff;
+      --sl-primary: #c382ff;
+      --sl-primary-soft: #f6ebff;
+      --sl-accent: #ff8ad8;
+      --sl-text: #2f3244;
+      --sl-muted: #8f93a8;
+      --sl-card: #ffffff;
+      --sl-border: #e4e6f3;
+      --sl-chip-bg: #f7f7ff;
+      --danger: #e63946;
+      --success: #0f9d58;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Hiragino Sans", "Yu Gothic", sans-serif;
+      min-height: 100vh;
+      display: flex;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.82), rgba(255,255,255,0.97)),
+        linear-gradient(135deg, var(--sl-gradient-from), var(--sl-gradient-to));
+      color: var(--sl-text);
+    }
+
+    .page {
+      flex: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 18px 22px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* ヘッダー */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand-block {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo {
+      width: 110px;
+      height: 110px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .brand-text-sub {
+      font-size: 11px;
+      color: var(--sl-muted);
+    }
+
+    .tag {
+      font-size: 11px;
+      color: var(--sl-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      margin-top: 4px;
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .page-subtitle {
+      font-size: 12px;
+      color: var(--sl-muted);
+    }
+
+    /* ユーザー＆ボタン */
+    .user-block {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .user-pill {
+      font-size: 13px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--sl-chip-bg);
+      border: 1px solid var(--sl-border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .user-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 20%, #ffffff, #9fd4ff);
+    }
+
+    .user-name {
+      font-weight: 600;
+    }
+
+    .user-role {
+      font-size: 11px;
+      color: var(--sl-muted);
+    }
+
+    .btn {
+      font-size: 12px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--sl-border);
+      background: #ffffff;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.1s, box-shadow 0.1s, transform 0.08s;
+    }
+
+    .btn:hover {
+      background: #f7f5ff;
+      box-shadow: 0 4px 10px rgba(183, 188, 228, 0.45);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      border: none;
+      background: linear-gradient(135deg, var(--sl-primary), var(--sl-accent));
+      color: #ffffff;
+      box-shadow: 0 8px 18px rgba(196,129,255,0.6);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 10px 22px rgba(196,129,255,0.7);
+    }
+
+    .btn-secondary {
+      background: #f7f5ff;
+    }
+
+    /* バナー・インフォ */
+    .error-banner {
+      display: none;
+      padding: 8px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      color: #e63946;
+      background: #ffe8eb;
+      border: 1px solid #ffc4ce;
+    }
+
+    .error-banner.visible {
+      display: block;
+    }
+
+    .info-banner {
+      padding: 8px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      color: var(--sl-muted);
+      background: #f6f2ff;
+      border: 1px solid #e1d7ff;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #f7f3ff;
+      border: 1px solid #e3d6ff;
+      color: var(--sl-primary);
+      margin-right: 6px;
+      margin-top: 4px;
+    }
+
+    .loading-text {
+      font-size: 12px;
+      color: var(--sl-muted);
+    }
+
+    /* レイアウト */
+    .content-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    @media (max-width: 960px) {
+      .content-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* カード */
+    .card {
+      background: var(--sl-card);
+      border-radius: 18px;
+      padding: 14px 16px 16px;
+      border: 1px solid var(--sl-border);
+      box-shadow: 0 10px 25px rgba(186,199,255,0.4);
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .card-sub {
+      font-size: 11px;
+      color: var(--sl-muted);
+      margin-bottom: 10px;
+    }
+
+    /* フォーム */
+    .form-section-title {
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 8px;
+      margin-bottom: 4px;
+    }
+
+    .form-section-caption {
+      font-size: 11px;
+      color: var(--sl-muted);
+      margin-bottom: 8px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px 12px;
+    }
+
+    .form-grid-full {
+      grid-template-columns: 1fr;
+    }
+
+    @media (max-width: 720px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      .brand-logo {
+        width: 90px;
+        height: 90px;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .form-label {
+      font-size: 11px;
+      color: var(--sl-muted);
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+      font-size: 12px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid var(--sl-border);
+      outline: none;
+      background: #ffffff;
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      border-color: var(--sl-primary);
+      box-shadow: 0 0 0 1px rgba(195,130,255,0.45);
+    }
+
+    .form-textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .hint {
+      font-size: 10px;
+      color: var(--sl-muted);
+    }
+
+    .form-row-full {
+      grid-column: 1 / -1;
+    }
+
+    .form-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .form-status {
+      font-size: 11px;
+      color: var(--sl-muted);
+      margin-top: 6px;
+    }
+
+    .pill-small {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-size: 10px;
+      border: 1px solid #e3d6ff;
+      background: #f7f3ff;
+      color: var(--sl-primary);
+    }
+
+    /* テーブル */
+    .table-wrapper {
+      width: 100%;
+      overflow: auto;
+      margin-top: 6px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+
+    thead {
+      background: #f7f7ff;
+    }
+
+    th, td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #edf0ff;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    th {
+      font-weight: 600;
+      color: var(--sl-muted);
+      position: sticky;
+      top: 0;
+      background: #f7f7ff;
+      z-index: 1;
+    }
+
+    tbody tr:hover {
+      background: #faf8ff;
+    }
+
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-size: 10px;
+      border: 1px solid #e0e0ff;
+      background: #f7f7ff;
+      color: var(--sl-primary);
+    }
+
+    .status-chip.draft {
+      background: #fff7e6;
+      border-color: #ffe2b5;
+      color: #b57400;
+    }
+
+    .status-chip.in-progress {
+      background: #e6f4ff;
+      border-color: #b5d9ff;
+      color: #0b5aa7;
+    }
+
+    .status-chip.completed {
+      background: #e6f7ec;
+      border-color: #b5e3c7;
+      color: #1f7a3f;
+    }
+
+    .small-muted {
+      font-size: 10px;
+      color: var(--sl-muted);
+    }
+
+    .table-empty {
+      font-size: 11px;
+      color: var(--sl-muted);
+      padding: 8px 0;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+      align-items: center;
+    }
+
+    .filter-label {
+      font-size: 11px;
+      color: var(--sl-muted);
+    }
+
+    .filter-select {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--sl-border);
+      background: #ffffff;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- ヘッダー -->
+    <header class="top-bar">
+      <div>
+        <div class="brand-block">
+          <div class="brand-logo">
+            <img src="../assets/slllogo.png" alt="Star Little Luna Logo" />
+          </div>
+          <div>
+            <div class="brand-text-sub">HR Management Center</div>
+          </div>
+        </div>
+        <div class="tag">HR / Evaluations</div>
+        <div class="page-title">人事評価管理（評価一覧 ＋ 新規評価シート作成）</div>
+        <div class="page-subtitle">
+          役員・マネージャーによる評価シートの作成と、過去の評価一覧を一画面で管理します。
+          評価の詳細画面は別途拡張可能な前提のヘッダー情報です。
+        </div>
+      </div>
+
+      <div class="user-block">
+        <button class="btn" id="back-hr-dashboard-btn">人事メニュー</button>
+        <button class="btn" id="back-admin-btn">Adminトップ</button>
+        <div class="user-pill" id="user-pill" style="visibility:hidden;">
+          <div class="user-avatar"></div>
+          <div>
+            <div class="user-name" id="user-name">ユーザー</div>
+            <div class="user-role" id="user-role">role</div>
+          </div>
+        </div>
+        <button class="btn" id="logout-btn">ログアウト</button>
+      </div>
+    </header>
+
+    <!-- バナー -->
+    <div id="error-banner" class="error-banner"></div>
+    <div class="info-banner">
+      <span id="role-info-text">
+        ログイン情報を確認しています…
+      </span>
+    </div>
+
+    <!-- ローディング -->
+    <div id="loading" class="loading-text">
+      Firebase Auth / Firestore への接続と人事データの読み込みを行っています…
+    </div>
+
+    <!-- 本体 -->
+    <section id="content-section" style="display:none;">
+      <div class="content-layout">
+        <!-- 左：評価一覧 -->
+        <div class="card">
+          <div class="card-title">評価一覧（最新 50 件）</div>
+          <div class="card-sub">
+            対象者別・ステータス別の絞り込みが可能です。行クリックで将来的な詳細画面に遷移させることも想定しています。
+          </div>
+
+          <div class="filter-row">
+            <span class="filter-label">絞り込み：</span>
+            <select id="filter-employee" class="filter-select">
+              <option value="">全対象者</option>
+            </select>
+            <select id="filter-status" class="filter-select">
+              <option value="">全ステータス</option>
+              <option value="draft">ドラフト</option>
+              <option value="in-progress">評価中</option>
+              <option value="completed">確定済み</option>
+            </select>
+            <button class="btn btn-secondary" id="reload-evals-btn">再読み込み</button>
+          </div>
+
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>対象者</th>
+                  <th>タイトル</th>
+                  <th>期間</th>
+                  <th>ステータス</th>
+                  <th>種別</th>
+                  <th>作成日</th>
+                </tr>
+              </thead>
+              <tbody id="eval-table-body">
+                <!-- JSで挿入 -->
+              </tbody>
+            </table>
+          </div>
+          <div class="small-muted" id="eval-count-text"></div>
+        </div>
+
+        <!-- 右：新規評価シート -->
+        <div class="card">
+          <div class="card-title">新規評価シート作成</div>
+          <div class="card-sub">
+            対象者・評価期間・タイトルを設定し、評価のヘッダー情報を作成します。
+            詳細な評価項目は別画面で追加する想定です。
+          </div>
+
+          <form id="eval-form" autocomplete="off">
+            <div class="form-section-title">① 対象者・評価タイトル</div>
+            <div class="form-section-caption">
+              対象者は Firestore の users コレクションから取得しています。（タレント以外を基本表示）
+            </div>
+            <div class="form-grid form-grid-full">
+              <div class="form-group">
+                <label class="form-label" for="employee-select">
+                  対象者 <span style="color:var(--danger);">*</span>
+                </label>
+                <select id="employee-select" class="form-select" required>
+                  <option value="">読み込み中…</option>
+                </select>
+                <div class="hint" id="employee-extra-hint"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="eval-title">
+                  評価タイトル <span style="color:var(--danger);">*</span>
+                </label>
+                <input id="eval-title" type="text" class="form-input"
+                       placeholder="例：2025年 上期評価 / 試用期間終了評価" required />
+              </div>
+            </div>
+
+            <div class="form-section-title">② 評価期間・種別・ステータス</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="period-label">評価期間（ラベル）</label>
+                <input id="period-label" type="text" class="form-input"
+                       placeholder="例：2025年4月〜2025年9月" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="period-from">期間開始日（YYYY-MM-DD）</label>
+                <input id="period-from" type="text" class="form-input" placeholder="例：2025-04-01" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="period-to">期間終了日（YYYY-MM-DD）</label>
+                <input id="period-to" type="text" class="form-input" placeholder="例：2025-09-30" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="eval-type">評価種別</label>
+                <select id="eval-type" class="form-select">
+                  <option value="half-year">半期評価</option>
+                  <option value="one-on-one">1on1評価</option>
+                  <option value="probation">試用期間評価</option>
+                  <option value="bonus">賞与評価</option>
+                  <option value="other">その他</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="eval-status">ステータス</label>
+                <select id="eval-status" class="form-select">
+                  <option value="draft">ドラフト</option>
+                  <option value="in-progress">評価中</option>
+                  <option value="completed">確定済み</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">
+                  公開設定
+                </label>
+                <label style="font-size:11px; display:flex; align-items:center; gap:4px;">
+                  <input id="visible-to-employee" type="checkbox" />
+                  評価結果を将来的に本人画面から閲覧可能にする予定
+                </label>
+                <div class="hint">※現時点ではフラグのみ。タレント側 / 社員側画面連携は後で実装。</div>
+              </div>
+            </div>
+
+            <div class="form-section-title">③ スコア・コメント（任意）</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="overall-score">総合スコア</label>
+                <input id="overall-score" type="number" step="0.1" class="form-input"
+                       placeholder="例：3.5（1〜5など）" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="potential-score">ポテンシャル評価</label>
+                <input id="potential-score" type="number" step="0.1" class="form-input"
+                       placeholder="例：4.0" />
+              </div>
+            </div>
+            <div class="form-group" style="margin-top:8px;">
+              <label class="form-label" for="summary-comment">コメント概要</label>
+              <textarea id="summary-comment" class="form-textarea"
+                        placeholder="評価の総評・メモなどを簡潔に記載（詳細コメントは別画面に拡張予定）"></textarea>
+            </div>
+
+            <div class="form-footer">
+              <div class="form-status" id="form-status">
+                必須項目を入力して「評価シートを作成」を押してください。
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button type="button" class="btn" id="reset-btn">入力リセット</button>
+                <button type="submit" class="btn btn-primary" id="submit-btn">
+                  評価シートを作成
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Firebase / Auth / Firestore -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      collection,
+      getDocs,
+      query,
+      orderBy,
+      limit,
+      addDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+    // Firebase設定
+    const firebaseConfig = {
+      apiKey: "AIzaSyAtCdoQIc-WjKp_Jl1DpAPxHOSByE3mjNM",
+      authDomain: "lss-core-9ad4b.firebaseapp.com",
+      projectId: "lss-core-9ad4b",
+      storageBucket: "lss-core-9ad4b.firebasestorage.app",
+      messagingSenderId: "783909822598",
+      appId: "1:783909822598:web:7a7b7c5dd52e31fd01b107",
+      measurementId: "G-CSDMWDJN3S"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // DOM参照
+    const errorBanner = document.getElementById("error-banner");
+    const roleInfoText = document.getElementById("role-info-text");
+    const loadingEl = document.getElementById("loading");
+    const contentSection = document.getElementById("content-section");
+
+    const userPill = document.getElementById("user-pill");
+    const userNameEl = document.getElementById("user-name");
+    const userRoleEl = document.getElementById("user-role");
+
+    const logoutBtn = document.getElementById("logout-btn");
+    const backHrDashboardBtn = document.getElementById("back-hr-dashboard-btn");
+    const backAdminBtn = document.getElementById("back-admin-btn");
+
+    const evalTableBody = document.getElementById("eval-table-body");
+    const evalCountText = document.getElementById("eval-count-text");
+    const filterEmployee = document.getElementById("filter-employee");
+    const filterStatus = document.getElementById("filter-status");
+    const reloadEvalsBtn = document.getElementById("reload-evals-btn");
+
+    const evalForm = document.getElementById("eval-form");
+    const formStatus = document.getElementById("form-status");
+    const submitBtn = document.getElementById("submit-btn");
+    const resetBtn = document.getElementById("reset-btn");
+
+    const employeeSelect = document.getElementById("employee-select");
+    const employeeExtraHint = document.getElementById("employee-extra-hint");
+
+    const evalTitleInput = document.getElementById("eval-title");
+    const periodLabelInput = document.getElementById("period-label");
+    const periodFromInput = document.getElementById("period-from");
+    const periodToInput = document.getElementById("period-to");
+    const evalTypeSelect = document.getElementById("eval-type");
+    const evalStatusSelect = document.getElementById("eval-status");
+    const visibleToEmployeeCheck = document.getElementById("visible-to-employee");
+    const overallScoreInput = document.getElementById("overall-score");
+    const potentialScoreInput = document.getElementById("potential-score");
+    const summaryCommentInput = document.getElementById("summary-comment");
+
+    let currentUserUid = null;
+    let currentUserName = null;
+    let currentUserRoleType = null;
+    let currentUserIsManager = false;
+    let currentUserIsAdmin = false;
+
+    let employeesCache = [];
+    let evaluationsCache = [];
+
+    function showError(msg) {
+      errorBanner.textContent = msg;
+      errorBanner.classList.add("visible");
+    }
+
+    function hideError() {
+      errorBanner.textContent = "";
+      errorBanner.classList.remove("visible");
+    }
+
+    function roleLabelJa(roleType, isManager, isAdmin) {
+      if (roleType === "talent") return "タレントアカウント";
+      if (roleType === "staff") {
+        if (isManager && isAdmin) return "管理職（Admin権限あり）";
+        if (isManager) return "マネージャー / 社員";
+        if (isAdmin) return "社員（Admin権限あり）";
+        return "社員アカウント";
+      }
+      if (roleType === "executive") {
+        if (isAdmin) return "役員 / 社長（Admin）";
+        return "役員アカウント";
+      }
+      return "未設定アカウント";
+    }
+
+    function applyAccessControl(roleType, isManager, isAdmin) {
+      // Admin / 役員 / マネージャー以外はアクセス不可
+      if (roleType === "executive" || isAdmin || isManager) {
+        return true;
+      }
+      roleInfoText.textContent =
+        "このページは人事評価の管理画面です。Admin / 役員 / マネージャー以外はアクセスできません。Adminトップへ戻ります。";
+      setTimeout(() => {
+        window.location.href = "./admin-dashboard.html";
+      }, 2000);
+      return false;
+    }
+
+    function formatDateFromTimestamp(ts) {
+      if (!ts) return "";
+      try {
+        const d = ts.toDate();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${y}-${m}-${day}`;
+      } catch {
+        return "";
+      }
+    }
+
+    function statusClass(status) {
+      if (status === "completed") return "completed";
+      if (status === "in-progress") return "in-progress";
+      if (status === "draft") return "draft";
+      return "";
+    }
+
+    // ナビゲーション
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+      window.location.href = "../login.html";
+    });
+
+    backHrDashboardBtn.addEventListener("click", () => {
+      window.location.href = "./admin-hr.html";
+    });
+
+    backAdminBtn.addEventListener("click", () => {
+      window.location.href = "./admin-dashboard.html";
+    });
+
+    reloadEvalsBtn.addEventListener("click", async () => {
+      await loadEvaluations();
+    });
+
+    filterEmployee.addEventListener("change", () => {
+      renderEvaluations();
+    });
+
+    filterStatus.addEventListener("change", () => {
+      renderEvaluations();
+    });
+
+    // 従業員一覧ロード
+    async function loadEmployees() {
+      employeeSelect.innerHTML = '<option value="">読み込み中…</option>';
+      filterEmployee.innerHTML = '<option value="">全対象者</option>';
+
+      try {
+        const q = query(collection(db, "users"), orderBy("displayName"));
+        const snap = await getDocs(q);
+
+        employeesCache = [];
+        snap.forEach((docSnap) => {
+          const d = docSnap.data();
+          if (!d.displayName) return;
+          // タレントは評価対象に含めてもOKだが、ここは一旦 roleType !== "talent" を基本にする
+          const roleType = d.roleType || "staff";
+          if (roleType === "talent") return;
+
+          employeesCache.push({
+            uid: docSnap.id,
+            displayName: d.displayName,
+            dept: d.dept || "",
+            section: d.section || "",
+            roleType,
+          });
+        });
+
+        if (!employeesCache.length) {
+          employeeSelect.innerHTML =
+            '<option value="">対象となる従業員が見つかりません</option>';
+          employeeExtraHint.textContent =
+            "users コレクションに roleType が staff / executive のユーザーを登録してください。";
+          return;
+        }
+
+        employeeSelect.innerHTML = '<option value="">対象者を選択してください</option>';
+        employeesCache.forEach(emp => {
+          const option = document.createElement("option");
+          option.value = emp.uid;
+          const deptLabel = emp.dept ? `（${emp.dept}）` : "";
+          option.textContent = `${emp.displayName}${deptLabel}`;
+          option.dataset.dept = emp.dept || "";
+          option.dataset.roleType = emp.roleType || "";
+          employeeSelect.appendChild(option);
+
+          const filterOpt = document.createElement("option");
+          filterOpt.value = emp.uid;
+          filterOpt.textContent = `${emp.displayName}${deptLabel}`;
+          filterEmployee.appendChild(filterOpt);
+        });
+
+        employeeExtraHint.textContent = `登録済み従業員数：${employeesCache.length} 名`;
+
+      } catch (err) {
+        console.error("loadEmployees error:", err);
+        showError("従業員の読み込み中にエラーが発生しました。");
+        employeeSelect.innerHTML = '<option value="">読み込みエラー</option>';
+      }
+    }
+
+    // 評価一覧ロード
+    async function loadEvaluations() {
+      evalTableBody.innerHTML = `
+        <tr>
+          <td colspan="6" class="table-empty">評価データを読み込んでいます…</td>
+        </tr>
+      `;
+      evalCountText.textContent = "";
+
+      try {
+        const qEval = query(
+          collection(db, "evaluations"),
+          orderBy("createdAt", "desc"),
+          limit(50)
+        );
+        const snap = await getDocs(qEval);
+
+        evaluationsCache = [];
+        snap.forEach(docSnap => {
+          const d = docSnap.data();
+          evaluationsCache.push({
+            id: docSnap.id,
+            ...d,
+          });
+        });
+
+        renderEvaluations();
+
+      } catch (err) {
+        console.error("loadEvaluations error:", err);
+        showError("評価一覧の読み込み中にエラーが発生しました。");
+        evalTableBody.innerHTML = `
+          <tr>
+            <td colspan="6" class="table-empty">読み込み中にエラーが発生しました。</td>
+          </tr>
+        `;
+      }
+    }
+
+    function renderEvaluations() {
+      const selectedEmployee = filterEmployee.value || "";
+      const selectedStatus = filterStatus.value || "";
+
+      let list = evaluationsCache.slice();
+
+      if (selectedEmployee) {
+        list = list.filter(ev => ev.employeeUid === selectedEmployee);
+      }
+      if (selectedStatus) {
+        list = list.filter(ev => ev.status === selectedStatus);
+      }
+
+      if (!list.length) {
+        evalTableBody.innerHTML = `
+          <tr>
+            <td colspan="6" class="table-empty">条件に一致する評価はまだありません。</td>
+          </tr>
+        `;
+        evalCountText.textContent = "表示件数：0 件";
+        return;
+      }
+
+      evalTableBody.innerHTML = "";
+
+      list.forEach(ev => {
+        const tr = document.createElement("tr");
+
+        const employeeName = ev.employeeDisplayName || "不明ユーザー";
+        const title = ev.title || "";
+        const periodLabel = ev.periodLabel || "";
+        const status = ev.status || "draft";
+        const evalType = ev.evalType || "";
+        const createdDate = formatDateFromTimestamp(ev.createdAt);
+
+        const periodText = periodLabel ||
+          [ev.periodFrom, ev.periodTo].filter(Boolean).join(" 〜 ");
+
+        tr.innerHTML = `
+          <td>${employeeName}</td>
+          <td>
+            ${title || "-"}
+            ${ev.overallScore != null
+              ? `<div class="small-muted">総合スコア：${ev.overallScore}</div>`
+              : ""
+            }
+          </td>
+          <td>${periodText || "-"}</td>
+          <td>
+            <span class="status-chip ${statusClass(status)}">
+              ${
+                status === "completed"
+                  ? "確定済み"
+                  : status === "in-progress"
+                  ? "評価中"
+                  : "ドラフト"
+              }
+            </span>
+          </td>
+          <td>${evalTypeLabel(ev.evalType)}</td>
+          <td>${createdDate || "-"}</td>
+        `;
+
+        // 将来的に詳細画面へ遷移させるならここでクリックハンドラを設定
+        // tr.addEventListener("click", () => {
+        //   window.location.href = `./hr-evaluation-detail.html?id=${ev.id}`;
+        // });
+
+        evalTableBody.appendChild(tr);
+      });
+
+      evalCountText.textContent = `表示件数：${list.length} 件（最大 50 件まで表示）`;
+    }
+
+    function evalTypeLabel(type) {
+      switch (type) {
+        case "half-year":
+          return "半期評価";
+        case "one-on-one":
+          return "1on1評価";
+        case "probation":
+          return "試用期間評価";
+        case "bonus":
+          return "賞与評価";
+        case "other":
+          return "その他";
+        default:
+          return "";
+      }
+    }
+
+    function clearForm() {
+      employeeSelect.value = "";
+      evalTitleInput.value = "";
+      periodLabelInput.value = "";
+      periodFromInput.value = "";
+      periodToInput.value = "";
+      evalTypeSelect.value = "half-year";
+      evalStatusSelect.value = "draft";
+      visibleToEmployeeCheck.checked = false;
+      overallScoreInput.value = "";
+      potentialScoreInput.value = "";
+      summaryCommentInput.value = "";
+
+      formStatus.textContent = "必須項目を入力して「評価シートを作成」を押してください。";
+    }
+
+    resetBtn.addEventListener("click", () => {
+      clearForm();
+    });
+
+    // 評価シート作成
+    evalForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      hideError();
+
+      const employeeUid = employeeSelect.value;
+      const title = evalTitleInput.value.trim();
+
+      if (!employeeUid || !title) {
+        showError("対象者と評価タイトルは必須です。");
+        formStatus.textContent = "必須項目が未入力です。";
+        return;
+      }
+
+      const employee = employeesCache.find(emp => emp.uid === employeeUid);
+      const employeeDisplayName = employee ? employee.displayName : "";
+      const employeeDept = employee ? employee.dept : "";
+      const employeeRoleType = employee ? employee.roleType : "";
+
+      const periodLabel = periodLabelInput.value.trim();
+      const periodFrom = periodFromInput.value.trim();
+      const periodTo = periodToInput.value.trim();
+      const evalType = evalTypeSelect.value || "half-year";
+      const status = evalStatusSelect.value || "draft";
+      const visibleToEmployee = visibleToEmployeeCheck.checked;
+
+      const overallScoreRaw = overallScoreInput.value.trim();
+      const potentialScoreRaw = potentialScoreInput.value.trim();
+      const summaryComment = summaryCommentInput.value.trim();
+
+      let overallScore = null;
+      let potentialScore = null;
+
+      if (overallScoreRaw) {
+        const v = parseFloat(overallScoreRaw.replace(",", "."));
+        if (!Number.isNaN(v)) overallScore = v;
+      }
+      if (potentialScoreRaw) {
+        const v2 = parseFloat(potentialScoreRaw.replace(",", "."));
+        if (!Number.isNaN(v2)) potentialScore = v2;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "作成中…";
+      formStatus.textContent = "評価シートを作成しています…";
+
+      try {
+        const payload = {
+          employeeUid,
+          employeeDisplayName,
+          employeeDept,
+          employeeRoleType,
+          title,
+          periodLabel,
+          periodFrom,
+          periodTo,
+          evalType,
+          status,
+          visibleToEmployee,
+          overallScore,
+          potentialScore,
+          summaryComment,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          createdBy: currentUserUid,
+          createdByName: currentUserName || "",
+        };
+
+        await addDoc(collection(db, "evaluations"), payload);
+
+        formStatus.textContent = "評価シートの作成が完了しました。評価一覧に反映されました。";
+        submitBtn.disabled = false;
+        submitBtn.textContent = "評価シートを作成";
+
+        // 再読み込み
+        await loadEvaluations();
+
+        // 必要であればフォームをクリア
+        // clearForm();
+
+      } catch (err) {
+        console.error("create evaluation error:", err);
+        showError("評価シート作成中にエラーが発生しました。");
+        formStatus.textContent = "エラーが発生しました。入力内容を確認して再度お試しください。";
+        submitBtn.disabled = false;
+        submitBtn.textContent = "評価シートを作成";
+      }
+    });
+
+    // Auth状態監視
+    onAuthStateChanged(auth, async (user) => {
+      hideError();
+
+      if (!user) {
+        window.location.href = "../login.html";
+        return;
+      }
+
+      try {
+        const ref = doc(db, "users", user.uid);
+        const snap = await getDoc(ref);
+
+        if (!snap.exists()) {
+          showError("ユーザー情報が登録されていません。管理者にお問い合わせください。");
+          loadingEl.textContent = "ユーザーデータが見つかりませんでした。";
+          return;
+        }
+
+        const data = snap.data();
+        const displayName = data.displayName || user.displayName || "No Name";
+        const roleType = data.roleType || "staff";
+        const isManager = !!data.isManager;
+        const isAdmin = !!data.isAdmin;
+
+        currentUserUid = user.uid;
+        currentUserName = displayName;
+        currentUserRoleType = roleType;
+        currentUserIsManager = isManager;
+        currentUserIsAdmin = isAdmin;
+
+        userPill.style.visibility = "visible";
+        userNameEl.textContent = displayName;
+        userRoleEl.textContent = roleLabelJa(roleType, isManager, isAdmin);
+
+        roleInfoText.innerHTML = `
+          <div class="badge-pill">roleType: <strong>${roleType}</strong></div>
+          ${isManager ? '<div class="badge-pill">マネージャー権限</div>' : ""}
+          ${isAdmin ? '<div class="badge-pill">Admin権限</div>' : ""}
+          <br />
+          このページでは、人事評価シートの作成と評価一覧を管理できます。
+          評価の詳細項目は今後拡張可能な前提で、まずはヘッダー情報を Firestore に保存します。
+        `;
+
+        const allowed = applyAccessControl(roleType, isManager, isAdmin);
+        if (!allowed) return;
+
+        // 従業員 & 評価一覧ロード
+        await loadEmployees();
+        await loadEvaluations();
+
+        loadingEl.style.display = "none";
+        contentSection.style.display = "block";
+
+      } catch (err) {
+        console.error("init error:", err);
+        showError("ユーザー情報の取得中にエラーが発生しました。");
+        loadingEl.textContent =
+          "エラーが発生しました。再読み込みしても改善しない場合は管理者に連絡してください。";
+      }
+    });
+  </script>
+</body>
+</html>

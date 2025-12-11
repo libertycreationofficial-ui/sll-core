@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Star Little Luna CORE - Loading</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    :root {
+      --sl-bg-from: #0b1020;
+      --sl-bg-to: #1b1230;
+      --sl-accent: #ff8ad8;
+      --sl-accent-2: #c382ff;
+      --sl-text: #f7f7ff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, #252a4a 0, #060714 55%, #02010a 100%);
+      color: var(--sl-text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Hiragino Sans", "Noto Sans JP", sans-serif;
+      overflow: hidden;
+    }
+
+    .loading-wrapper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      padding: 32px 40px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(18px);
+      box-shadow:
+        0 0 40px rgba(0, 0, 0, 0.6),
+        0 0 80px rgba(195, 130, 255, 0.35);
+      animation: card-pop 0.9s ease-out forwards;
+    }
+
+    .logo-ring {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+
+    .logo-img {
+      position: relative;
+      width: 250px;
+      height: 250px;
+      object-fit: contain;
+      z-index: 1;
+      animation: logo-pop 1.2s ease-out forwards;
+    }
+
+    .title {
+      font-size: 1.1rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      opacity: 0.9;
+    }
+
+    .subtitle {
+      font-size: 0.86rem;
+      color: rgba(247, 247, 255, 0.76);
+    }
+
+    .accent-text {
+      font-weight: 500;
+      background: linear-gradient(90deg, var(--sl-accent), var(--sl-accent-2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .progress-bar {
+      position: relative;
+      width: 220px;
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .progress-fill {
+      position: absolute;
+      inset: 0;
+      transform-origin: left center;
+      background: linear-gradient(90deg, var(--sl-accent), var(--sl-accent-2));
+      animation: progress-fill 2s ease-in-out forwards;
+    }
+
+    .status-text {
+      margin-top: 6px;
+      font-size: 0.78rem;
+      color: rgba(247, 247, 255, 0.66);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .glow-orb {
+      position: absolute;
+      width: 260px;
+      height: 260px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(195, 130, 255, 0.6), transparent 70%);
+      opacity: 0.3;
+      filter: blur(18px);
+      z-index: -1;
+      animation: orb-pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes card-pop {
+      0% {
+        transform: translateY(12px) scale(0.96);
+        opacity: 0;
+      }
+      100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes logo-pop {
+      0% {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      40% {
+        transform: scale(1.08);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    @keyframes spin-ring {
+      0% {
+        transform: rotate(0deg);
+        box-shadow: 0 0 40px rgba(255, 138, 216, 0.4);
+      }
+      50% {
+        box-shadow: 0 0 50px rgba(195, 130, 255, 0.6);
+      }
+      100% {
+        transform: rotate(360deg);
+        box-shadow: 0 0 40px rgba(255, 138, 216, 0.4);
+      }
+    }
+
+    @keyframes progress-fill {
+      0% {
+        transform: scaleX(0);
+      }
+      40% {
+        transform: scaleX(0.35);
+      }
+      75% {
+        transform: scaleX(0.82);
+      }
+      100% {
+        transform: scaleX(1);
+      }
+    }
+
+    @keyframes orb-pulse {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 0.28;
+      }
+      50% {
+        transform: scale(1.14);
+        opacity: 0.45;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .loading-wrapper {
+        width: 88%;
+        padding: 24px 22px;
+        gap: 18px;
+      }
+      .logo-ring {
+        width: 104px;
+        height: 104px;
+      }
+      .logo-img {
+        width: 64px;
+        height: 64px;
+      }
+      .title {
+        font-size: 1rem;
+      }
+      .subtitle {
+        font-size: 0.8rem;
+        text-align: center;
+      }
+      .progress-bar {
+        width: 190px;
+      }
+    }
+  </style>
+
+  <script>
+    // 2秒後に login.html へリダイレクト
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        window.location.href = "login.html";
+      }, 2000); // 2000ミリ秒 = 2秒
+    });
+  </script>
+</head>
+
+<body>
+  <div class="loading-wrapper">
+    <div class="glow-orb"></div>
+
+    <div class="logo-ring">
+      <!-- 🔻 ロゴファイル名に合わせて src を変更してください -->
+      <img src="./assets/slllogo.png" alt="Star Little Luna Logo" class="logo-img" />
+    </div>
+
+    <div style="text-align: center;">
+      <div class="title">STAR LITTLE LUNA CORE</div>
+      <p class="subtitle">
+        <span class="accent-text">Initializing workspace</span><br />
+        Connecting talents, managers and producers...
+      </p>
+    </div>
+
+    <div style="text-align: center;">
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <div class="status-text">Loading interface · 2 sec</div>
+    </div>
+  </div>
+</body>
+</html>

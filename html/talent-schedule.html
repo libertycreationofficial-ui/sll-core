@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Star Little Luna CORE - スケジュール管理（管理側）</title>
+
+  <style>
+    :root {
+      --bg: #fafaff;
+      --card: #ffffff;
+      --border: #e3e6f3;
+      --text: #2c2e3a;
+      --muted: #8d90a4;
+
+      --primary1: #c382ff;
+      --primary2: #ff8ad8;
+
+      --badge-talent: #9b4dff;
+      --badge-manager: #ff62b0;
+
+      --danger: #e63946;
+      --success: #0f9d58;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, "Hiragino Sans", "Yu Gothic", sans-serif;
+      background: linear-gradient(180deg,#ffffff, #f4ecff);
+      color: var(--text);
+    }
+
+    .page {
+      margin: 0 auto;
+      max-width: 1100px;
+      padding: 20px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-block {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .brand-logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #fff, #dcd2ff);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      box-shadow: 0 6px 14px rgba(154,123,255,0.45);
+    }
+
+    .brand-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .page-subtitle {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .btn {
+      font-size: 12px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.1s, box-shadow 0.1s, transform 0.08s;
+    }
+
+    .btn:hover {
+      background: #f7f5ff;
+      box-shadow: 0 4px 10px rgba(183, 188, 228, 0.45);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      border: none;
+      background: linear-gradient(135deg, var(--primary1), var(--primary2));
+      color: #ffffff;
+      box-shadow: 0 8px 18px rgba(196,129,255,0.6);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 10px 22px rgba(196,129,255,0.7);
+    }
+
+    .btn-sm {
+      padding: 4px 10px;
+      font-size: 11px;
+    }
+
+    /* バナー */
+    .error-banner {
+      display: none;
+      margin-top: 14px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      color: var(--danger);
+      background: #ffe8eb;
+      border: 1px solid #ffc4ce;
+    }
+    .error-banner.visible { display: block; }
+
+    .success-banner {
+      display: none;
+      margin-top: 6px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      color: var(--success);
+      background: #e6f4ea;
+      border: 1px solid #c8e6c9;
+    }
+    .success-banner.visible { display: block; }
+
+    /* タレント選択 / 月選択 */
+    .toolbar {
+      margin-top: 18px;
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .toolbar select,
+    .toolbar input[type="month"] {
+      padding: 8px 12px;
+      font-size: 13px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #fff;
+      min-width: 160px;
+    }
+
+    /* カード */
+    .card {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 20px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      box-shadow: 0 6px 20px rgba(150,130,255,0.25);
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    /* 新規追加フォーム */
+    .new-grid {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 10px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .field label {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    input, select, textarea {
+      padding: 8px 10px;
+      font-size: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-family: inherit;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 48px;
+    }
+
+    #create-btn {
+      margin-top: 14px;
+    }
+
+    #create-loading {
+      font-size: 11px;
+      color: var(--muted);
+      margin-left: 10px;
+    }
+
+    /* ---- スケジュール一覧 ---- */
+    .list-header {
+      font-size: 11px;
+      color: var(--muted);
+      display: grid;
+      grid-template-columns: 1.1fr 1.1fr 1.2fr 0.8fr 0.7fr;
+      gap: 10px;
+      padding: 4px 4px 8px;
+      border-bottom: 1px solid #edf0ff;
+      margin-bottom: 6px;
+    }
+
+    .event-row {
+      margin-bottom: 10px;
+      padding: 10px 10px 8px;
+      background: #ffffff;
+      border: 1px solid #ece8ff;
+      border-radius: 16px;
+      transition: 0.15s;
+    }
+
+    .event-row:hover {
+      background: #f9f4ff;
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(170,150,255,0.35);
+    }
+
+    .event-row.unread {
+      border-color: #b892ff !important;
+      box-shadow: 0 0 0 2px rgba(155,100,255,0.25);
+      background: #f9f3ff;
+    }
+
+    .event-main {
+      display: grid;
+      grid-template-columns: 1.1fr 1.1fr 1.2fr 0.8fr 0.7fr;
+      gap: 10px;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .event-title {
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .event-date {
+      font-size: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      color: #fff;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-left: 4px;
+    }
+
+    .badge-talent { background: var(--badge-talent); }
+    .badge-manager { background: var(--badge-manager); }
+
+    .badge-unread {
+      background: #ff3366;
+      margin-left: 6px;
+    }
+
+    .event-type-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid #e0e4ff;
+      background: #f7f7ff;
+    }
+
+    .event-type-stream { border-color:#c0e8cf; background:#e8f8ee; color:#0f9d58;}
+    .event-type-record { border-color:#ffe0b3; background:#fff5e6; color:#f57c00;}
+    .event-type-meeting { border-color:#cfd8ff; background:#edf3ff; color:#3f51b5;}
+    .event-type-off { border-color:#e0e0e0; background:#f5f5f5; color:#757575;}
+
+    .detail-panel {
+      margin-top: 8px;
+      border-radius: 14px;
+      padding: 10px 10px 10px;
+      background: #f7f5ff;
+      border: 1px dashed #d8cef7;
+      display: none;
+      font-size: 12px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 8px 10px;
+    }
+
+    .detail-footer {
+      margin-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .btn-save,
+    .btn-delete {
+      font-size: 11px;
+      padding: 6px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .btn-save {
+      background: #ffffff;
+    }
+
+    .btn-delete {
+      background: #ffe5e9;
+      border-color: #ffb8c4;
+      color: #d20024;
+    }
+
+    .empty-state {
+      padding: 16px 4px 6px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 880px) {
+      .new-grid { grid-template-columns: repeat(2,1fr); }
+      .event-main,
+      .list-header {
+        grid-template-columns: 1.2fr 1.1fr 1.2fr 1fr;
+      }
+      .col-memo { display:none; }
+    }
+
+    @media (max-width: 640px) {
+      .list-header { display:none; }
+      .event-main {
+        grid-template-columns: 1.4fr 1.2fr 1.1fr;
+      }
+      .col-type, .col-title { display:none; }
+      .detail-grid {
+        grid-template-columns: repeat(2,minmax(0,1fr));
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <header>
+      <div class="brand-block">
+        <div class="brand-logo">
+          <img src="../assets/sll-logo.png" alt="Star Little Luna Logo" />
+        </div>
+        <div>
+          <div class="page-title">スケジュール管理（管理側）</div>
+          <div class="page-subtitle">
+            タレント別に配信・収録・面談・オフなどの予定を登録・編集できます。
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <button class="btn btn-sm" id="to-dashboard-btn">ダッシュボード</button>
+        <button class="btn btn-sm" id="logout-btn">ログアウト</button>
+      </div>
+    </header>
+
+    <div id="error-banner" class="error-banner"></div>
+    <div id="success-banner" class="success-banner"></div>
+
+    <!-- タレント選択 & 月選択 -->
+    <section class="toolbar">
+      <div>
+        <span>タレント：</span>
+        <select id="talentSelect">
+          <option value="">タレントを選択</option>
+        </select>
+      </div>
+
+      <div>
+        <span>表示する月：</span>
+        <input id="monthFilter" type="month" />
+      </div>
+    </section>
+
+    <!-- 新規登録 -->
+    <section class="card">
+      <div class="card-title">新規スケジュール登録</div>
+      <div class="new-grid">
+        <div class="field">
+          <label for="newDate">日付</label>
+          <input id="newDate" type="date" />
+        </div>
+        <div class="field">
+          <label for="newStart">開始時刻</label>
+          <input id="newStart" type="time" />
+        </div>
+        <div class="field">
+          <label for="newEnd">終了時刻</label>
+          <input id="newEnd" type="time" />
+        </div>
+        <div class="field">
+          <label for="newType">種別</label>
+          <select id="newType">
+            <option value="stream">配信</option>
+            <option value="recording">収録</option>
+            <option value="meeting">面談 / MTG</option>
+            <option value="off">オフ</option>
+            <option value="other">その他</option>
+          </select>
+        </div>
+        <div class="field" style="grid-column:1 / -1;">
+          <label for="newTitle">タイトル / 内容</label>
+          <input id="newTitle" type="text" placeholder="例: YouTube配信『○○コラボ』" />
+        </div>
+        <div class="field" style="grid-column:1 / -1;">
+          <label for="newMemo">メモ（任意）</label>
+          <textarea id="newMemo" placeholder="URL / クライアント名 / 備考など"></textarea>
+        </div>
+      </div>
+      <div style="margin-top:10px; display:flex; align-items:center;">
+        <button class="btn btn-primary btn-sm" id="create-btn">スケジュールを追加</button>
+        <span id="create-loading"></span>
+      </div>
+    </section>
+
+    <!-- 一覧 -->
+    <section class="card">
+      <div class="card-title">登録済みスケジュール</div>
+      <div class="list-header">
+        <div>日付</div>
+        <div>時間</div>
+        <div>種別</div>
+        <div class="col-title">タイトル</div>
+        <div>操作</div>
+      </div>
+      <div id="eventList"></div>
+      <div id="empty-state" class="empty-state" style="display:none;">
+        タレントを選択するとスケジュールが表示されます。
+      </div>
+    </section>
+  </div>
+
+  <!-- Firebase & ロジック -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signOut,
+    } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      collection,
+      query,
+      orderBy,
+      onSnapshot,
+      addDoc,
+      updateDoc,
+      deleteDoc,
+    } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { serverTimestamp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+    // ==== Firebase 初期化 ====
+    const firebaseConfig = {
+      apiKey: "AIzaSyAtCdoQIc-WjKp_Jl1DpAPxHOSByE3mjNM",
+      authDomain: "lss-core-9ad4b.firebaseapp.com",
+      projectId: "lss-core-9ad4b",
+      storageBucket: "lss-core-9ad4b.firebasestorage.app",
+      messagingSenderId: "783909822598",
+      appId: "1:783909822598:web:7a7b7c5dd52e31fd01b107",
+      measurementId: "G-CSDMWDJN3S"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // ==== DOM ====
+    const errorBanner = document.getElementById("error-banner");
+    const successBanner = document.getElementById("success-banner");
+
+    const logoutBtn = document.getElementById("logout-btn");
+    const toDashboardBtn = document.getElementById("to-dashboard-btn");
+
+    const talentSelect = document.getElementById("talentSelect");
+    const monthFilter = document.getElementById("monthFilter");
+
+    const newDateInput = document.getElementById("newDate");
+    const newStartInput = document.getElementById("newStart");
+    const newEndInput = document.getElementById("newEnd");
+    const newTypeSelect = document.getElementById("newType");
+    const newTitleInput = document.getElementById("newTitle");
+    const newMemoInput = document.getElementById("newMemo");
+    const createBtn = document.getElementById("create-btn");
+    const createLoading = document.getElementById("create-loading");
+
+    const eventListEl = document.getElementById("eventList");
+    const emptyStateEl = document.getElementById("empty-state");
+
+    // ==== 共通関数 ====
+    function showError(msg) {
+      errorBanner.textContent = msg;
+      errorBanner.classList.add("visible");
+    }
+    function hideError() {
+      errorBanner.textContent = "";
+      errorBanner.classList.remove("visible");
+    }
+    function showSuccess(msg) {
+      successBanner.textContent = msg;
+      successBanner.classList.add("visible");
+      setTimeout(() => {
+        successBanner.classList.remove("visible");
+      }, 2500);
+    }
+
+    function typeLabel(type) {
+      switch (type) {
+        case "stream": return "配信";
+        case "recording": return "収録";
+        case "meeting": return "面談 / MTG";
+        case "off": return "オフ";
+        default: return "その他";
+      }
+    }
+    function typeClass(type) {
+      switch (type) {
+        case "stream": return "event-type-pill event-type-stream";
+        case "recording": return "event-type-pill event-type-record";
+        case "meeting": return "event-type-pill event-type-meeting";
+        case "off": return "event-type-pill event-type-off";
+        default: return "event-type-pill";
+      }
+    }
+
+    // ==== ナビゲーション ====
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+      window.location.href = "../login.html";
+    });
+
+    toDashboardBtn.addEventListener("click", () => {
+      window.location.href = "./dashboard.html";
+    });
+
+    // ==== 状態 ====
+    let currentUserData = null;
+    let currentTalentId = null;
+    let eventsUnsub = null;
+    let currentEvents = [];
+
+    // ==== ログイン確認 ====
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "../login.html";
+        return;
+      }
+      try {
+        const ref = doc(db, "users", user.uid);
+        const snap = await getDoc(ref);
+        if (!snap.exists()) {
+          showError("ユーザー情報が登録されていません。管理者にお問い合わせください。");
+          return;
+        }
+        const data = snap.data();
+        currentUserData = data;
+
+        const roleType = data.roleType || "staff";
+        const isManager = !!data.isManager;
+        const isAdmin = !!data.isAdmin;
+
+        // タレントアカウントはアクセス不可
+        if (roleType === "talent") {
+          showError("このページはタレントアカウントからは利用できません。");
+          setTimeout(() => {
+            window.location.href = "./dashboard.html";
+          }, 1500);
+          return;
+        }
+
+        // 月フィルタ初期値を「今月」に
+        const now = new Date();
+        const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2,"0")}`;
+        monthFilter.value = ym;
+
+        // タレント一覧ロード
+        await loadTalentOptions();
+      } catch (err) {
+        console.error(err);
+        showError("ユーザー情報の取得中にエラーが発生しました。");
+      }
+    });
+
+    // ==== タレント一覧ロード ====
+    async function loadTalentOptions() {
+      try {
+        const talentsRef = collection(db, "talents");
+        const qTalents = query(talentsRef, orderBy("name"));
+        onSnapshot(qTalents, (snapshot) => {
+          const options = ['<option value="">タレントを選択</option>'];
+          snapshot.forEach((docSnap) => {
+            const d = docSnap.data();
+            const id = docSnap.id;
+            const name = d.name || "(no name)";
+            options.push(`<option value="${id}">${name}（${id}）</option>`);
+          });
+          talentSelect.innerHTML = options.join("");
+        });
+      } catch (err) {
+        console.error(err);
+        showError("タレント一覧の読み込み中にエラーが発生しました。");
+      }
+    }
+
+    talentSelect.addEventListener("change", () => {
+      currentTalentId = talentSelect.value || null;
+      subscribeEvents();
+    });
+
+    monthFilter.addEventListener("change", () => {
+      renderEvents();
+    });
+
+    // ==== スケジュール購読 ====
+    function subscribeEvents() {
+      if (eventsUnsub) {
+        eventsUnsub();
+        eventsUnsub = null;
+      }
+      currentEvents = [];
+      renderEvents();
+
+      if (!currentTalentId) return;
+
+      const eventsRef = collection(db, "talentSchedules", currentTalentId, "events");
+      const eventsQuery = query(eventsRef, orderBy("date"), orderBy("startTime"));
+
+      eventsUnsub = onSnapshot(
+        eventsQuery,
+        (snapshot) => {
+          currentEvents = snapshot.docs.map((d) => ({
+            id: d.id,
+            data: d.data(),
+          }));
+          renderEvents();
+        },
+        (err) => {
+          console.error(err);
+          showError("スケジュールの取得中にエラーが発生しました。");
+        }
+      );
+    }
+
+    // ==== 新規スケジュール追加 ====
+    createBtn.addEventListener("click", async () => {
+      hideError();
+      if (!currentTalentId) {
+        showError("先にタレントを選択してください。");
+        return;
+      }
+
+      const date = newDateInput.value;
+      const startTime = newStartInput.value;
+      const endTime = newEndInput.value;
+      const type = newTypeSelect.value || "other";
+      const title = newTitleInput.value.trim();
+      const memo = newMemoInput.value.trim();
+
+      if (!date || !startTime || !endTime || !title) {
+        showError("日付・時間・タイトルは必須です。");
+        return;
+      }
+
+      createBtn.disabled = true;
+      createLoading.textContent = "登録中…";
+
+      try {
+        const eventsRef = collection(db, "talentSchedules", currentTalentId, "events");
+        await addDoc(eventsRef, {
+          date,
+          startTime,
+          endTime,
+          type,
+          title,
+          memo: memo || null,
+          createdBy: "manager",
+          readByManager: true,   // 自分で登録 → 既読
+          readByTalent: false,   // タレント側には未読
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+
+        newTitleInput.value = "";
+        newMemoInput.value = "";
+        createLoading.textContent = "";
+      } catch (err) {
+        console.error(err);
+        showError("スケジュール登録中にエラーが発生しました。");
+        createLoading.textContent = "";
+      } finally {
+        createBtn.disabled = false;
+      }
+    });
+
+    // ==== 一覧描画 ====
+    function renderEvents() {
+      if (!currentTalentId) {
+        eventListEl.innerHTML = "";
+        emptyStateEl.style.display = "block";
+        emptyStateEl.textContent = "タレントが選択されていません。";
+        return;
+      }
+
+      if (!currentEvents || currentEvents.length === 0) {
+        eventListEl.innerHTML = "";
+        emptyStateEl.style.display = "block";
+        emptyStateEl.textContent = "スケジュールが登録されていません。";
+        return;
+      }
+
+      const month = monthFilter.value; // "YYYY-MM" or ""
+      const filtered = currentEvents.filter(({ data }) => {
+        if (!month) return true;
+        return (data.date || "").startsWith(month);
+      });
+
+      if (filtered.length === 0) {
+        eventListEl.innerHTML = "";
+        emptyStateEl.style.display = "block";
+        emptyStateEl.textContent = "この月にはスケジュールがありません。";
+        return;
+      }
+
+      emptyStateEl.style.display = "none";
+
+      let html = "";
+      for (const { id, data } of filtered) {
+        const date = data.date || "";
+        const start = data.startTime || "";
+        const end = data.endTime || "";
+        const type = data.type || "other";
+        const title = data.title || "";
+        const memo = data.memo || "";
+
+        const createdBy = data.createdBy || "unknown";
+        const readByManager = data.readByManager === false ? false : true; // undefined → true（過去データ）
+
+        const isUnreadForManager = data.readByManager === false; // 「未読フラグが false のものだけ」ハイライト
+
+        const updatedAtText =
+          data.updatedAt && data.updatedAt.toDate
+            ? data.updatedAt.toDate().toLocaleString("ja-JP")
+            : "-";
+
+        // 発行元バッジ
+        let originBadge = "";
+        if (createdBy === "talent") {
+          originBadge = `<span class="badge badge-talent">TALENT</span>`;
+        } else if (createdBy === "manager") {
+          originBadge = `<span class="badge badge-manager">MANAGER</span>`;
+        }
+
+        // 未読バッジ（管理側視点）
+        const unreadBadge = isUnreadForManager
+          ? `<span class="badge badge-unread">未読</span>`
+          : "";
+
+        html += `
+          <div class="event-row ${isUnreadForManager ? "unread" : ""}" data-id="${id}">
+            <div class="event-main">
+              <div class="event-date">
+                ${date}
+                ${originBadge}
+                ${unreadBadge}
+              </div>
+              <div>${start} 〜 ${end}</div>
+              <div class="col-type">
+                <span class="${typeClass(type)}">${typeLabel(type)}</span>
+              </div>
+              <div class="col-title">
+                <div class="event-title">${title.replace(/</g,"&lt;").replace(/>/g,"&gt;")}</div>
+              </div>
+              <div style="text-align:right;">
+                <button type="button" class="btn btn-sm event-toggle" data-id="${id}">
+                  詳細
+                </button>
+              </div>
+            </div>
+
+            <div class="detail-panel" id="detail-${id}">
+              <div class="detail-grid">
+                <div class="field">
+                  <label>日付</label>
+                  <input type="date" id="date-${id}" value="${date}" />
+                </div>
+                <div class="field">
+                  <label>開始時刻</label>
+                  <input type="time" id="start-${id}" value="${start}" />
+                </div>
+                <div class="field">
+                  <label>終了時刻</label>
+                  <input type="time" id="end-${id}" value="${end}" />
+                </div>
+                <div class="field">
+                  <label>種別</label>
+                  <select id="type-${id}">
+                    ${renderTypeOptions(type)}
+                  </select>
+                </div>
+                <div class="field" style="grid-column:1 / -1;">
+                  <label>タイトル / 内容</label>
+                  <input type="text" id="title-${id}" value="${title.replace(/"/g,"&quot;")}" />
+                </div>
+                <div class="field" style="grid-column:1 / -1;">
+                  <label>メモ</label>
+                  <textarea id="memo-${id}">${memo.replace(/</g,"&lt;").replace(/>/g,"&gt;")}</textarea>
+                </div>
+              </div>
+              <div class="detail-footer">
+                <div>最終更新: ${updatedAtText}</div>
+                <div style="display:flex;gap:6px;">
+                  <button type="button" class="btn btn-sm btn-delete event-delete" data-id="${id}">
+                    削除
+                  </button>
+                  <button type="button" class="btn btn-sm btn-save event-save" data-id="${id}">
+                    保存
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      eventListEl.innerHTML = html;
+
+      // 詳細開閉
+      document.querySelectorAll(".event-toggle").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-id");
+          toggleDetail(id);
+        });
+      });
+
+      // 保存
+      document.querySelectorAll(".event-save").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-id");
+          saveEvent(id);
+        });
+      });
+
+      // 削除
+      document.querySelectorAll(".event-delete").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-id");
+          deleteEvent(id);
+        });
+      });
+    }
+
+    function renderTypeOptions(selected) {
+      const types = [
+        { value: "stream", label: "配信" },
+        { value: "recording", label: "収録" },
+        { value: "meeting", label: "面談 / MTG" },
+        { value: "off", label: "オフ" },
+        { value: "other", label: "その他" },
+      ];
+      return types
+        .map((t) => {
+          const sel = t.value === selected ? "selected" : "";
+          return `<option value="${t.value}" ${sel}>${t.label}</option>`;
+        })
+        .join("");
+    }
+
+    function toggleDetail(id) {
+      const panel = document.getElementById(`detail-${id}`);
+      if (!panel) return;
+
+      const visible = panel.style.display === "block";
+      // 一旦全部閉じる
+      document.querySelectorAll(".detail-panel").forEach((p) => {
+        p.style.display = "none";
+      });
+
+      if (!visible) {
+        panel.style.display = "block";
+        // 詳細を開いたタイミングで「管理側既読」にする
+        markAsReadByManager(id);
+      }
+    }
+
+    async function markAsReadByManager(eventId) {
+      try {
+        if (!currentTalentId) return;
+        const ref = doc(db, "talentSchedules", currentTalentId, "events", eventId);
+        await updateDoc(ref, { readByManager: true });
+      } catch (err) {
+        console.error("既読更新エラー:", err);
+      }
+    }
+
+    // ==== 保存 / 削除 ====
+    async function saveEvent(eventId) {
+      hideError();
+      if (!currentTalentId) return;
+
+      const dateEl = document.getElementById(`date-${eventId}`);
+      const startEl = document.getElementById(`start-${eventId}`);
+      const endEl = document.getElementById(`end-${eventId}`);
+      const typeEl = document.getElementById(`type-${eventId}`);
+      const titleEl = document.getElementById(`title-${eventId}`);
+      const memoEl = document.getElementById(`memo-${eventId}`);
+
+      const date = dateEl.value;
+      const startTime = startEl.value;
+      const endTime = endEl.value;
+      const type = typeEl.value || "other";
+      const title = titleEl.value.trim();
+      const memo = memoEl.value.trim();
+
+      if (!date || !startTime || !endTime || !title) {
+        showError("日付・時間・タイトルは必須です。");
+        return;
+      }
+
+      try {
+        const ref = doc(db, "talentSchedules", currentTalentId, "events", eventId);
+        await updateDoc(ref, {
+          date,
+          startTime,
+          endTime,
+          type,
+          title,
+          memo: memo || null,
+          updatedAt: serverTimestamp(),
+          // 管理側から編集 → 管理側既読扱い
+          readByManager: true,
+        });
+        showSuccess("スケジュールを保存しました。");
+      } catch (err) {
+        console.error(err);
+        showError("スケジュール保存中にエラーが発生しました。");
+      }
+    }
+
+    async function deleteEvent(eventId) {
+      hideError();
+      if (!currentTalentId) return;
+
+      const ok = window.confirm("このスケジュールを削除しますか？");
+      if (!ok) return;
+
+      try {
+        const ref = doc(db, "talentSchedules", currentTalentId, "events", eventId);
+        await deleteDoc(ref);
+        showSuccess("スケジュールを削除しました。");
+      } catch (err) {
+        console.error(err);
+        showError("スケジュール削除中にエラーが発生しました。");
+      }
+    }
+  </script>
+</body>
+</html>
