@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Star Little Luna - タレント運営・AI分析</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI",
+        "Hiragino Sans", "Yu Gothic", sans-serif;
+      background: #f5f7ff;
+      padding: 20px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+    h2 {
+      font-size: 16px;
+      margin: 16px 0 6px;
+    }
+    .small {
+      font-size: 12px;
+      color: #666;
+    }
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .top-right {
+      display: flex;
+      gap: 8px;
+    }
+    button {
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: none;
+      background: #8a9dff;
+      color: #fff;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    button.secondary {
+      background: #e1e4ff;
+      color: #333;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+    .section {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-top: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+    .msg {
+      font-size: 12px;
+      margin-top: 6px;
+      color: #555;
+    }
+    .error { color: #d32f2f; }
+    .success { color: #0f9d58; }
+
+    label {
+      font-size: 13px;
+      display: block;
+      margin-bottom: 4px;
+    }
+    input[type="file"],
+    select,
+    input[type="date"] {
+      font-size: 13px;
+      padding: 4px 6px;
+      border-radius: 6px;
+      border: 1px solid #d0d4ea;
+      background: #fafbff;
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .col {
+      flex: 1;
+      min-width: 260px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #e0e3f0;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #f2f3ff;
+      font-weight: 600;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+    @media (max-width: 700px) {
+      .metric-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .metric-card {
+      border-radius: 10px;
+      border: 1px solid #dde1ff;
+      padding: 8px 10px;
+      background: #fafbff;
+    }
+    .metric-title {
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 4px;
+    }
+    .metric-main {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .metric-sub {
+      font-size: 11px;
+      color: #777;
+    }
+    .pill {
+      display: inline-block;
+      padding: 1px 7px;
+      border-radius: 999px;
+      font-size: 11px;
+      margin-right: 4px;
+    }
+    .pill-star {
+      background: #e0e7ff;
+      color: #1d2f80;
+    }
+    .pill-rival {
+      background: #ffe3e0;
+      color: #7a1818;
+    }
+    .pill-good {
+      background: #e0f7e9;
+      color: #0f5132;
+    }
+    .pill-bad {
+      background: #ffebee;
+      color: #b71c1c;
+    }
+
+    .bar-track {
+      width: 100%;
+      height: 8px;
+      border-radius: 999px;
+      background: #edf0ff;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #8a9dff, #c382ff);
+    }
+
+    .ai-box {
+      margin-top: 8px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #fafbff;
+      border: 1px solid #dde1ff;
+      font-size: 13px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div>
+      <h1>🛰 Star Little Luna - タレント運営・AI分析</h1>
+      <div class="small" id="staffInfo">ログイン確認中...</div>
+    </div>
+    <div class="top-right">
+      <button id="backDashboardBtn" class="secondary">ダッシュボードへ</button>
+      <button id="logoutBtn" class="secondary">ログアウト</button>
+    </div>
+  </div>
+
+  <!-- ① CSVアップロード（シートにだけ落とす） -->
+  <div class="section">
+    <h2>① CSVアップロード → 自動分析用シート連携</h2>
+    <div class="small">
+      ・タレントの配信実績や応援ポイントなどのCSVをアップロードすると、<br>
+      　Apps Script 経由で Googleスプレッドシート（例：<b>raw</b> シート）に自動で追記されます。<br>
+      ・画面上にはCSVの中身は表示せず、シート側で Star / 競合レーベル平均やランキングを計算します。
+    </div>
+
+    <div style="margin-top:8px;">
+      <label for="csvFileInput">タレント集計CSVファイル</label>
+      <input type="file" id="csvFileInput" accept=".csv" />
+      <button id="uploadCsvBtn" style="margin-left:6px;">シートに送信</button>
+    </div>
+
+    <div id="csvMsg" class="msg"></div>
+  </div>
+
+  <!-- ② レーベル平均 ＆ 期間別メトリクス -->
+  <div class="section">
+    <h2>② レーベル平均＆期間別メトリクス（Star vs 競合）</h2>
+    <div class="row">
+      <div class="col">
+        <div class="small">
+          ・Apps Script の <code>?mode=metrics</code> エンドポイントから、<br>
+          　StarLittleLuna レーベル平均と競合他社レーベル平均を取得して表示します。<br>
+          ・配信回数が 0 のタレントは、シート側の計算で除外しておいてください。<br>
+          ・前日／前週／前月／任意期間の比較もここにまとめて表示します。
+        </div>
+        <div style="margin-top:8px;">
+          <button id="reloadMetricsBtn" class="secondary">メトリクス再読み込み</button>
+          <div id="metricsMsg" class="msg"></div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="small">
+          表示イメージ：<br>
+          応援ポイント平均・コメント数・30分あたりコメント・総配信時間・平均視聴者数など。
+        </div>
+      </div>
+    </div>
+
+    <div class="metric-grid" id="metricGrid">
+      <!-- JSでカードを差し込む -->
+    </div>
+
+    <div style="margin-top:10px;">
+      <div class="small">期間別の変化（例：前日 / 前週 / 前月 / 任意期間）</div>
+      <table>
+        <thead>
+          <tr>
+            <th>指標</th>
+            <th>前日比(%)</th>
+            <th>前週比(%)</th>
+            <th>前月比(%)</th>
+            <th>任意期間(%)</th>
+          </tr>
+        </thead>
+        <tbody id="periodBody">
+          <tr><td colspan="5" class="small">まだメトリクスが読み込まれていません。</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ③ タレントランキング -->
+  <div class="section">
+    <h2>③ タレントランキング（事務所内全体）</h2>
+    <div class="small">
+      ・シート側で userId ごとに集計したランキングを JSON として返し、<br>
+      　応援ポイント・コメント数（30分あたり）・総配信時間・平均視聴者数・バッチ獲得数・月末応援ダイヤ合計などを表示します。<br>
+      ・バーの長さで相対的な位置をざっくり比較できます。
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>順位</th>
+          <th>タレント</th>
+          <th>応援Pt</th>
+          <th>コメント/30分</th>
+          <th>総配信時間(min)</th>
+          <th>平均視聴者数</th>
+          <th>バッジ</th>
+          <th>月末ダイヤ</th>
+          <th>比較バー</th>
+        </tr>
+      </thead>
+      <tbody id="rankingBody">
+        <tr><td colspan="9" class="small">まだメトリクスが読み込まれていません。</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ④ マネージャー別：担当ライバー比較＆給与目安 -->
+  <div class="section">
+    <h2>④ マネージャー別比較（担当ダイヤ＆給与目安）</h2>
+    <div class="small">
+      ・担当ライバーの応援ダイヤ合計の 10% をマネージャーの給与目安として表示します。<br>
+      ・managerId と userId の紐付けは、シート側で userId 管理しておきます。
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>マネージャーID</th>
+          <th>名前</th>
+          <th>担当タレント数</th>
+          <th>担当ダイヤ合計</th>
+          <th>10% 給与目安</th>
+        </tr>
+      </thead>
+      <tbody id="managerBody">
+        <tr><td colspan="5" class="small">まだメトリクスが読み込まれていません。</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ⑤ AI分析 -->
+  <div class="section">
+    <h2>⑤ Gemini などによる AIタレント分析</h2>
+    <div class="small">
+      ・Apps Script 側で <code>?mode=ai</code> を受け取り、Gemini などのAIに<br>
+      　StarLittleLuna と競合レーベルのデータ・ランキング・期間別推移を投げて分析します。<br>
+      ・このボタンを押すと、そのAIレポートを取得して表示します。（AI風ではなく、実際にAPIを叩く前提）
+    </div>
+
+    <button id="aiAnalyzeBtn" style="margin-top:8px;">AIで分析する</button>
+    <div id="aiMsg" class="msg"></div>
+    <div id="aiResult" class="ai-box">
+      まだAI分析は実行されていません。
+    </div>
+  </div>
+
+  <script type="module">
+    // ★★★★★ ここをあなたの Apps Script WebアプリURL(/exec) に差し替える ★★★★★
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxCzrfMT0pL2z_BWVeu587ZlMal5xxZj17dxrTEAeXnH8riCTuz6-pSUWxMUGVrI4Xg/exec";
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+
+    // ===== Firebase 設定 =====
+    const firebaseConfig = {
+      apiKey: "AIzaSyAtCdoQIc-WjKp_Jl1DpAPxHOSByE3mjNM",
+      authDomain: "lss-core-9ad4b.firebaseapp.com",
+      projectId: "lss-core-9ad4b",
+      storageBucket: "lss-core-9ad4b.firebasestorage.app",
+      messagingSenderId: "783909822598",
+      appId: "1:783909822598:web:7a7b7c5dd52e31fd01b107",
+      measurementId: "G-CSDMWDJN3S"
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // ===== DOM =====
+    const staffInfoEl      = document.getElementById("staffInfo");
+    const backDashboardBtn = document.getElementById("backDashboardBtn");
+    const logoutBtn        = document.getElementById("logoutBtn");
+
+    const csvFileInput = document.getElementById("csvFileInput");
+    const uploadCsvBtn = document.getElementById("uploadCsvBtn");
+    const csvMsg       = document.getElementById("csvMsg");
+
+    const reloadMetricsBtn = document.getElementById("reloadMetricsBtn");
+    const metricsMsg       = document.getElementById("metricsMsg");
+    const metricGrid       = document.getElementById("metricGrid");
+    const periodBody       = document.getElementById("periodBody");
+    const rankingBody      = document.getElementById("rankingBody");
+    const managerBody      = document.getElementById("managerBody");
+
+    const aiAnalyzeBtn = document.getElementById("aiAnalyzeBtn");
+    const aiMsg        = document.getElementById("aiMsg");
+    const aiResult     = document.getElementById("aiResult");
+
+    let currentUser = null;
+
+    function setMsg(el, text, type = "") {
+      el.textContent = text;
+      el.className = "msg";
+      if (type === "error")   el.classList.add("error");
+      if (type === "success") el.classList.add("success");
+    }
+
+    // ===== Auth 状態監視 =====
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        location.href = "login.html";
+        return;
+      }
+      currentUser = user;
+      staffInfoEl.textContent =
+        `ログイン中: ${user.displayName || user.email || "スタッフ"}`;
+      // ログイン直後にメトリクス読み込み
+      loadMetrics();
+    });
+
+    backDashboardBtn.addEventListener("click", () => {
+      location.href = "dashboard.html";
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+      } catch (e) {
+        console.error(e);
+      }
+      location.href = "login.html";
+    });
+
+    // ===== CSV → Apps Script → シート =====
+    function parseCsvToRows(text) {
+      const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
+      return lines.map(line => line.split(",").map(c => c.trim()));
+    }
+
+    uploadCsvBtn.addEventListener("click", async () => {
+      const file = csvFileInput.files[0];
+      if (!file) {
+        setMsg(csvMsg, "CSVファイルを選択してください。", "error");
+        return;
+      }
+
+      try {
+        setMsg(csvMsg, "シートに送信中…");
+        uploadCsvBtn.disabled = true;
+
+        const text = await file.text();
+        const rows = parseCsvToRows(text);
+        if (!rows.length) {
+          setMsg(csvMsg, "CSVに有効な行がありません。", "error");
+          uploadCsvBtn.disabled = false;
+          return;
+        }
+
+        const payload = {
+          rows,
+          uploadedBy: currentUser ? currentUser.uid : null
+        };
+
+        const res = await fetch(APPS_SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload)
+        });
+
+        const raw = await res.text();
+        let json;
+        try {
+          json = JSON.parse(raw);
+        } catch (e) {
+          console.error("CSV response JSON parse error:", raw);
+          setMsg(csvMsg, "サーバーからJSON形式のレスポンスが返ってきませんでした。", "error");
+          return;
+        }
+
+        if (json.status !== "ok") {
+          console.error("CSV server error:", json);
+          setMsg(csvMsg, "サーバー側でエラーが発生しました: " + (json.message || "不明なエラー"), "error");
+          return;
+        }
+
+        setMsg(csvMsg, `シートに送信しました。（${json.imported || rows.length} 行）`, "success");
+      } catch (e) {
+        console.error("CSV upload error:", e);
+        setMsg(csvMsg, "送信中にエラーが発生しました。（ネットワーク等）", "error");
+      } finally {
+        uploadCsvBtn.disabled = false;
+      }
+    });
+
+    // ===== メトリクス読み込み =====
+    reloadMetricsBtn.addEventListener("click", () => {
+      loadMetrics();
+    });
+
+    async function loadMetrics() {
+      if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("YOUR_APPS_SCRIPT_WEB_APP_URL_HERE")) {
+        setMsg(metricsMsg, "APPS_SCRIPT_URL が設定されていません。", "error");
+        return;
+      }
+      try {
+        setMsg(metricsMsg, "メトリクス取得中…");
+        metricGrid.innerHTML = "";
+        periodBody.innerHTML =
+          '<tr><td colspan="5" class="small">読込中...</td></tr>';
+        rankingBody.innerHTML =
+          '<tr><td colspan="9" class="small">読込中...</td></tr>';
+        managerBody.innerHTML =
+          '<tr><td colspan="5" class="small">読込中...</td></tr>';
+
+        const res  = await fetch(APPS_SCRIPT_URL + "?mode=metrics");
+        const text = await res.text();
+
+        let json;
+        try {
+          json = JSON.parse(text);
+        } catch (e) {
+          console.error("metrics JSON parse error:", text);
+          setMsg(metricsMsg, "メトリクスのJSONパースに失敗しました。", "error");
+          return;
+        }
+
+        if (json.status !== "ok") {
+          setMsg(metricsMsg, "メトリクスの取得に失敗しました: " + (json.message || "不明なエラー"), "error");
+          return;
+        }
+
+        setMsg(metricsMsg, "メトリクスを取得しました。", "success");
+        const metricsData = json.data || {};
+        renderLabelMetrics(metricsData.labelMetrics || []);
+        renderPeriodMetrics(metricsData.periodDiff || {});
+        renderRanking(metricsData.rankings || []);
+        renderManagerTable(metricsData.managers || []);
+      } catch (e) {
+        console.error("loadMetrics error:", e);
+        setMsg(metricsMsg, "メトリクス取得中にエラーが発生しました。", "error");
+      }
+    }
+
+    // レーベル平均カード
+    function renderLabelMetrics(list) {
+      metricGrid.innerHTML = "";
+      if (!Array.isArray(list) || list.length === 0) {
+        const div = document.createElement("div");
+        div.className = "small";
+        div.textContent = "レーベル平均メトリクスがまだありません。シート側で計算結果をAPIに返すようにしてください。";
+        metricGrid.appendChild(div);
+        return;
+      }
+
+      list.forEach((m) => {
+        const star = Number(m.starValue || 0);
+        const rival = Number(m.rivalValue || 0);
+        const diff = star - rival;
+        const card = document.createElement("div");
+        card.className = "metric-card";
+
+        const diffClass =
+          diff > 0 ? "pill pill-good" :
+          diff < 0 ? "pill pill-bad" : "pill";
+
+        card.innerHTML = `
+          <div class="metric-title">${m.label || m.metricName || "指標"}</div>
+          <div class="metric-main">${star.toFixed ? star.toFixed(1) : star}</div>
+          <div class="metric-sub">
+            <span class="pill pill-star">Star: ${star}</span>
+            <span class="pill pill-rival">競合: ${rival}</span>
+            <span class="${diffClass}">
+              差分: ${diff >= 0 ? "+" : ""}${diff.toFixed ? diff.toFixed(1) : diff}
+            </span>
+            ${m.period ? `<span class="pill">${m.period}</span>` : ""}
+          </div>
+        `;
+        metricGrid.appendChild(card);
+      });
+    }
+
+    // 期間別%変化
+    function renderPeriodMetrics(diff) {
+      periodBody.innerHTML = "";
+      const rows = diff.rows || []; // 例: [{metric:"応援ポイント", day:5, week:12, month:30, custom:-3}, ...]
+      if (!Array.isArray(rows) || rows.length === 0) {
+        periodBody.innerHTML =
+          '<tr><td colspan="5" class="small">期間別の変化データがありません。</td></tr>';
+        return;
+      }
+
+      rows.forEach((r) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${r.metric || "-"}</td>
+          <td>${fmtPercent(r.day)}</td>
+          <td>${fmtPercent(r.week)}</td>
+          <td>${fmtPercent(r.month)}</td>
+          <td>${fmtPercent(r.custom)}</td>
+        `;
+        periodBody.appendChild(tr);
+      });
+    }
+
+    function fmtPercent(v) {
+      const num = Number(v);
+      if (isNaN(num)) return "-";
+      const s = num.toFixed(1);
+      return (num >= 0 ? "+" + s : s) + "%";
+    }
+
+    // ランキング
+    function renderRanking(list) {
+      rankingBody.innerHTML = "";
+      if (!Array.isArray(list) || list.length === 0) {
+        rankingBody.innerHTML =
+          '<tr><td colspan="9" class="small">ランキングデータがありません。</td></tr>';
+        return;
+      }
+
+      const maxSupport = Math.max(...list.map(t => Number(t.supportPoints || 0)), 1);
+
+      list.forEach((t, idx) => {
+        const support   = Number(t.supportPoints || 0);
+        const comments  = Number(t.commentsPer30 || 0);
+        const minutes   = Number(t.totalMinutes || 0);
+        const avgView   = Number(t.avgViewers || 0);
+        const badges    = Number(t.badges || 0);
+        const diamonds  = Number(t.diamonds || 0);
+        const barWidth  = Math.round((support / maxSupport) * 100);
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td>${t.displayName || t.name || t.userId || "-"}</td>
+          <td>${support}</td>
+          <td>${comments.toFixed ? comments.toFixed(1) : comments}</td>
+          <td>${minutes}</td>
+          <td>${avgView.toFixed ? avgView.toFixed(1) : avgView}</td>
+          <td>${badges}</td>
+          <td>${diamonds}</td>
+          <td>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:${barWidth}%;"></div>
+            </div>
+          </td>
+        `;
+        rankingBody.appendChild(tr);
+      });
+    }
+
+    // マネージャー比較
+    function renderManagerTable(list) {
+      managerBody.innerHTML = "";
+      if (!Array.isArray(list) || list.length === 0) {
+        managerBody.innerHTML =
+          '<tr><td colspan="5" class="small">マネージャー別データがありません。</td></tr>';
+        return;
+      }
+
+      list.forEach((m) => {
+        const diamonds = Number(m.totalDiamonds || 0);
+        const salary   = Number(m.salary10pct || (diamonds * 0.1));
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${m.managerId || "-"}</td>
+          <td>${m.managerName || "-"}</td>
+          <td>${m.talentCount || 0}</td>
+          <td>${diamonds}</td>
+          <td>${salary.toFixed ? salary.toFixed(1) : salary}</td>
+        `;
+        managerBody.appendChild(tr);
+      });
+    }
+
+    // ===== AI分析 =====
+    aiAnalyzeBtn.addEventListener("click", async () => {
+      if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("YOUR_APPS_SCRIPT_WEB_APP_URL_HERE")) {
+        setMsg(aiMsg, "APPS_SCRIPT_URL が設定されていません。", "error");
+        return;
+      }
+      try {
+        setMsg(aiMsg, "AIが分析中です…");
+        aiAnalyzeBtn.disabled = true;
+        aiResult.textContent = "";
+
+        const res  = await fetch(APPS_SCRIPT_URL + "?mode=ai");
+        const text = await res.text();
+
+        let json;
+        try {
+          json = JSON.parse(text);
+        } catch (e) {
+          console.error("AI JSON parse error:", text);
+          setMsg(aiMsg, "AIレスポンスのJSONパースに失敗しました。", "error");
+          return;
+        }
+
+        if (json.status !== "ok") {
+          setMsg(aiMsg, "AI分析に失敗しました: " + (json.message || "不明なエラー"), "error");
+          return;
+        }
+
+        setMsg(aiMsg, "AI分析が完了しました。", "success");
+        aiResult.textContent = json.aiText || "AIからのテキストが空でした。";
+      } catch (e) {
+        console.error("AI analyze error:", e);
+        setMsg(aiMsg, "AI分析中にエラーが発生しました。", "error");
+      } finally {
+        aiAnalyzeBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

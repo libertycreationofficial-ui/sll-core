@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Star Little Luna CORE - タレント一覧</title>
+  <style>
+    :root {
+      --sl-bg: #f9fbff;
+      --sl-gradient-from: #f5ddff;
+      --sl-gradient-to: #cbe8ff;
+      --sl-primary: #c382ff;
+      --sl-accent: #ff8ad8;
+      --sl-text: #2f3244;
+      --sl-muted: #8f93a8;
+      --sl-card: #ffffff;
+      --sl-border: #e4e6f3;
+      --sl-chip-bg: #f7f7ff;
+      --danger: #e63946;
+      --success: #0f9d58;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Hiragino Sans", "Yu Gothic", sans-serif;
+      min-height: 100vh;
+      display: flex;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.95)),
+        linear-gradient(135deg, var(--sl-gradient-from), var(--sl-gradient-to));
+      color: var(--sl-text);
+    }
+
+    .page {
+      flex: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 18px 22px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-block {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #fff8ff, #b0d9ff);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 14px rgba(154,123,255,0.45);
+    }
+
+    .brand-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .brand-text-main {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .brand-text-sub {
+      font-size: 11px;
+      color: var(--sl-muted);
+    }
+
+    .tag {
+      font-size: 11px;
+      color: var(--sl-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      margin-top: 4px;
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .page-subtitle {
+      font-size: 12px;
+      color: var(--sl-muted);
+    }
+
+    .user-block {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-pill {
+      font-size: 13px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--sl-chip-bg);
+      border: 1px solid var(--sl-border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .user-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 20%, #ffffff, #9fd4ff);
+    }
+
+    .user-name {
+      font-weight: 600;
+    }
+
+    .user-role {
+      font-size: 11px;
+      color: var(--sl-muted);
+    }
+
+    .btn {
+      font-size: 12px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--sl-border);
+      background: #ffffff;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.1s, box-shadow 0.1s, transform 0.08s;
+    }
+
+    .btn:hover {
+      background: #f7f5ff;
+      box-shadow: 0 4px 10px rgba(183, 188, 228, 0.45);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      border: none;
+      background: linear-gradient(135deg, var(--sl-primary), var(--sl-accent));
+      color: #ffffff;
+      box-shadow: 0 8px 18px rgba(196,129,255,0.6);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 10px 22px rgba(196,129,255,0.7);
+    }
+
+    .btn-sm {
+      padding: 4px 10px;
+      font-size: 11px;
+    }
+
+    .error-banner {
+      display: none;
+      padding: 8px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      color: var(--danger);
+      background: #ffe8eb;
+      border: 1px solid #ffc4ce;
+    }
+
+    .error-banner.visible { display: block; }
+
+    .success-banner {
+      display: none;
+      padding: 8px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      color: var(--success);
+      background: #e6f4ea;
+      border: 1px solid #c8e6c9;
+      margin-top: 4px;
+    }
+
+    .success-banner.visible { display: block; }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .toolbar input, .toolbar select {
+      padding: 6px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--sl-border);
+      background: #ffffff;
+      font-size: 12px;
+      min-width: 160px;
+    }
+
+    .list-card {
+      background: var(--sl-card);
+      border-radius: 22px;
+      padding: 14px 16px 16px;
+      border: 1px solid var(--sl-border);
+      box-shadow: 0 10px 24px rgba(186,199,255,0.45);
+    }
+
+    .list-header {
+      display: grid;
+      grid-template-columns: 1.4fr 1.2fr 1.2fr 0.8fr 0.6fr;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--sl-muted);
+      padding: 4px 6px 6px;
+      border-bottom: 1px solid #edf0ff;
+    }
+
+    .talent-list {
+      margin-top: 4px;
+    }
+
+    .talent-row {
+      border-radius: 14px;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      background: #fdfdff;
+      border: 1px solid #f0f1ff;
+      transition: background 0.12s, box-shadow 0.12s, transform 0.08s;
+    }
+
+    .talent-row-main {
+      display: grid;
+      grid-template-columns: 1.4fr 1.2fr 1.2fr 0.8fr 0.6fr;
+      gap: 8px;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .talent-row:hover {
+      background: #f8f5ff;
+      box-shadow: 0 4px 10px rgba(183,188,228,0.40);
+      transform: translateY(-1px);
+    }
+
+    .talent-name {
+      font-weight: 600;
+    }
+
+    .talent-id {
+      font-size: 11px;
+      color: var(--sl-muted);
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid #e0e4ff;
+      background: #f7f7ff;
+    }
+
+    .status-active {
+      border-color: #c0e8cf;
+      background: #e8f8ee;
+      color: #0f9d58;
+    }
+
+    .status-paused {
+      border-color: #ffe0b3;
+      background: #fff5e6;
+      color: #f57c00;
+    }
+
+    .status-graduated {
+      border-color: #e0e0e0;
+      background: #f5f5f5;
+      color: #757575;
+    }
+
+    .detail-panel {
+      margin-top: 8px;
+      border-radius: 14px;
+      padding: 10px 10px 10px;
+      background: #f7f5ff;
+      border: 1px dashed #d8cef7;
+      display: none;
+      font-size: 12px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px 12px;
+    }
+
+    .detail-field {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .detail-field label {
+      font-size: 11px;
+      color: var(--sl-muted);
+    }
+
+    .detail-field input,
+    .detail-field select,
+    .detail-field textarea {
+      padding: 6px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--sl-border);
+      font-size: 12px;
+      background: #ffffff;
+    }
+
+    .detail-field textarea {
+      border-radius: 10px;
+      min-height: 60px;
+      resize: vertical;
+    }
+
+    .detail-field textarea.readonly {
+      background: #f3f3fb;
+    }
+
+    .detail-footer {
+      margin-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .detail-info {
+      font-size: 11px;
+      color: var(--sl-muted);
+    }
+
+    .empty-state {
+      padding: 16px 4px 6px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--sl-muted);
+    }
+
+    .helper-text {
+      font-size: 11px;
+      color: var(--sl-muted);
+      margin-top: 2px;
+    }
+
+    @media (max-width: 860px) {
+      .page {
+        padding: 16px 12px 24px;
+      }
+      .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .list-header,
+      .talent-row-main {
+        grid-template-columns: 1.6fr 1.2fr 1fr 0.9fr;
+      }
+      .col-email { display: none; }
+    }
+
+    @media (max-width: 640px) {
+      .list-header {
+        display: none;
+      }
+      .talent-row-main {
+        grid-template-columns: 1.8fr 1.2fr 1fr;
+      }
+      .col-email,
+      .col-status-label { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- ヘッダー -->
+    <header class="top-bar">
+      <div>
+        <div class="brand-block">
+          <div class="brand-logo">
+            <!-- ロゴ画像パスは環境に合わせて変更 -->
+            <img src="../assets/slllogo.png" alt="Star Little Luna Logo" />
+          </div>
+          <div>
+            <div class="brand-text-main">Star Little Luna</div>
+            <div class="brand-text-sub">Talent Master List</div>
+          </div>
+        </div>
+        <div class="tag">Management / Talents</div>
+        <div class="page-title">タレント一覧・編集</div>
+        <div class="page-subtitle">
+          Star Little Luna 所属タレントの基本情報を一覧・検索・編集できます。
+          各行の「詳細」を押すと、登録された情報の全体を確認できます。
+        </div>
+      </div>
+
+      <div class="user-block">
+        <button class="btn btn-sm" id="to-create-btn">＋ 新規タレント登録</button>
+        <button class="btn btn-sm" id="back-management-btn">マネジメントへ</button>
+        <button class="btn btn-sm" id="back-dashboard-btn">ダッシュボード</button>
+
+        <div class="user-pill" id="user-pill" style="visibility:hidden;">
+          <div class="user-avatar"></div>
+          <div>
+            <div class="user-name" id="user-name">ユーザー</div>
+            <div class="user-role" id="user-role">role</div>
+          </div>
+        </div>
+        <button class="btn btn-sm" id="logout-btn">ログアウト</button>
+      </div>
+    </header>
+
+    <div id="error-banner" class="error-banner"></div>
+    <div id="success-banner" class="success-banner"></div>
+
+    <!-- ツールバー -->
+    <section class="toolbar">
+      <div class="toolbar-group">
+        <span style="font-size:12px;color:var(--sl-muted);">検索:</span>
+        <input id="search-input" type="text" placeholder="ID / 名前 / メールで検索" />
+      </div>
+
+      <div class="toolbar-group">
+        <span style="font-size:12px;color:var(--sl-muted);">カテゴリ:</span>
+        <select id="category-filter">
+          <option value="">すべて</option>
+          <option value="Vtuber">Vtuber</option>
+          <option value="Streamer">ストリーマー</option>
+          <option value="MixChannel">ミクチャ</option>
+          <option value="TikTok">TikTok</option>
+          <option value="IRIAM">IRIAM</option>
+          <option value="Creator">Creator</option>
+          <option value="palmu">palmu</option>
+          <option value="Mirrativ">Mirrativ</option>
+        </select>
+      </div>
+
+      <div class="toolbar-group">
+        <span style="font-size:12px;color:var(--sl-muted);">ステータス:</span>
+        <select id="status-filter">
+          <option value="">すべて</option>
+          <option value="active">active</option>
+          <option value="paused">paused</option>
+          <option value="graduated">graduated</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- 一覧 -->
+    <section class="list-card">
+      <div class="list-header">
+        <div>タレント</div>
+        <div class="col-email">メールアドレス</div>
+        <div>メインカテゴリ</div>
+        <div class="col-status-label">ステータス</div>
+        <div>操作</div>
+      </div>
+
+      <div id="talent-list" class="talent-list"></div>
+      <div id="empty-state" class="empty-state" style="display:none;">
+        該当するタレントがいません。
+      </div>
+    </section>
+  </div>
+
+  <!-- Firebase＋ロジック -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signOut,
+    } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      collection,
+      query,
+      orderBy,
+      onSnapshot,
+      updateDoc,
+      serverTimestamp,
+      getDocs,
+      where,
+    } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+    // ===== Firebase 初期化 =====
+    const firebaseConfig = {
+      apiKey: "AIzaSyAtCdoQIc-WjKp_Jl1DpAPxHOSByE3mjNM",
+      authDomain: "lss-core-9ad4b.firebaseapp.com",
+      projectId: "lss-core-9ad4b",
+      storageBucket: "lss-core-9ad4b.firebasestorage.app",
+      messagingSenderId: "783909822598",
+      appId: "1:783909822598:web:7a7b7c5dd52e31fd01b107",
+      measurementId: "G-CSDMWDJN3S"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // ===== DOM =====
+    const errorBanner = document.getElementById("error-banner");
+    const successBanner = document.getElementById("success-banner");
+    const userPill = document.getElementById("user-pill");
+    const userNameEl = document.getElementById("user-name");
+    const userRoleEl = document.getElementById("user-role");
+
+    const logoutBtn = document.getElementById("logout-btn");
+    const backDashboardBtn = document.getElementById("back-dashboard-btn");
+    const backManagementBtn = document.getElementById("back-management-btn");
+    const toCreateBtn = document.getElementById("to-create-btn");
+
+    const searchInput = document.getElementById("search-input");
+    const categoryFilter = document.getElementById("category-filter");
+    const statusFilter = document.getElementById("status-filter");
+
+    const talentListEl = document.getElementById("talent-list");
+    const emptyStateEl = document.getElementById("empty-state");
+
+    // ===== 共通ユーティリティ =====
+    function showError(msg) {
+      errorBanner.textContent = msg;
+      errorBanner.classList.add("visible");
+    }
+    function hideError() {
+      errorBanner.textContent = "";
+      errorBanner.classList.remove("visible");
+    }
+    function showSuccess(msg) {
+      successBanner.textContent = msg;
+      successBanner.classList.add("visible");
+      setTimeout(() => {
+        successBanner.classList.remove("visible");
+      }, 2500);
+    }
+
+    function roleLabelJa(roleType, isManager, isAdmin) {
+      if (roleType === "talent") return "タレントアカウント";
+      if (roleType === "staff") {
+        if (isManager && isAdmin) return "管理職（Admin権限あり）";
+        if (isManager) return "マネージャー / 社員";
+        if (isAdmin) return "社員（Admin権限あり）";
+        return "社員アカウント";
+      }
+      if (roleType === "executive") {
+        if (isAdmin) return "役員 / 社長（Admin）";
+        return "役員アカウント";
+      }
+      return "未設定アカウント";
+    }
+
+    function statusClass(status) {
+      if (status === "active") return "status-pill status-active";
+      if (status === "paused") return "status-pill status-paused";
+      if (status === "graduated") return "status-pill status-graduated";
+      return "status-pill";
+    }
+
+    // HTMLエスケープ（属性用）
+    function escAttr(str = "") {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+    // HTMLエスケープ（テキストエリア用）
+    function escTextarea(str = "") {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    // ===== ナビゲーション =====
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+      window.location.href = "../login.html";
+    });
+
+    backDashboardBtn.addEventListener("click", () => {
+      window.location.href = "./dashboard.html";
+    });
+
+    backManagementBtn.addEventListener("click", () => {
+      window.location.href = "./management.html";
+    });
+
+    toCreateBtn.addEventListener("click", () => {
+      window.location.href = "./talent-create.html";
+    });
+
+    // ===== ログインユーザー情報 =====
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "../login.html";
+        return;
+      }
+
+      try {
+        const ref = doc(db, "users", user.uid);
+        const snap = await getDoc(ref);
+
+        if (!snap.exists()) {
+          showError("ユーザー情報が登録されていません。管理者にお問い合わせください。");
+          return;
+        }
+
+        const data = snap.data();
+        const displayName = data.displayName || user.displayName || "No Name";
+        const roleType = data.roleType || "staff";
+        const isManager = !!data.isManager;
+        const isAdmin = !!data.isAdmin;
+
+        // タレントアカウントはアクセス不可
+        if (roleType === "talent") {
+          showError("このページはタレントアカウントからは利用できません。");
+          setTimeout(() => { window.location.href = "./dashboard.html"; }, 1500);
+          return;
+        }
+
+        userPill.style.visibility = "visible";
+        userNameEl.textContent = displayName;
+        userRoleEl.textContent = roleLabelJa(roleType, isManager, isAdmin);
+
+      } catch (err) {
+        console.error(err);
+        showError("ユーザー情報の取得中にエラーが発生しました。");
+      }
+    });
+
+    // ===== 担当マネージャー一覧（usersコレクション） =====
+    let managerList = []; // { uid, label }
+    let managerLoaded = false;
+
+    async function loadManagers() {
+      try {
+        const usersRef = collection(db, "users");
+        // isManager == true のユーザーを取得
+        const q = query(usersRef, where("isManager", "==", true));
+        const snap = await getDocs(q);
+
+        managerList = snap.docs.map(d => {
+          const data = d.data();
+          const uid = d.id;
+          const displayName = data.displayName || data.realName || "No Name";
+          const roleType = data.roleType || "staff";
+          const isManager = !!data.isManager;
+          const isAdmin = !!data.isAdmin;
+          const roleLabel = roleLabelJa(roleType, isManager, isAdmin);
+          // ラベル: 名前 / ロール / UID
+          const label = `${displayName} / ${roleLabel} / ${uid}`;
+          return { uid, label };
+        }).sort((a, b) => a.label.localeCompare(b.label, "ja"));
+
+        managerLoaded = true;
+        refreshAllManagerSelects();
+      } catch (err) {
+        console.error(err);
+        showError("担当マネージャー一覧の取得中にエラーが発生しました。");
+      }
+    }
+
+    function renderManagerOptions(selectedUid) {
+      const options = [];
+      options.push(`<option value="">未設定</option>`);
+      if (!managerList || managerList.length === 0) {
+        return options.join("");
+      }
+      for (const m of managerList) {
+        const sel = m.uid === selectedUid ? "selected" : "";
+        options.push(
+          `<option value="${escAttr(m.uid)}" ${sel}>${escAttr(m.label)}</option>`
+        );
+      }
+      return options.join("");
+    }
+
+    function refreshAllManagerSelects() {
+      if (!managerLoaded) return;
+      const selects = document.querySelectorAll("select[data-manager-select='true']");
+      selects.forEach(select => {
+        const current = select.getAttribute("data-current-manager") || "";
+        select.innerHTML = renderManagerOptions(current);
+      });
+    }
+
+    // 先にマネージャー一覧ロード開始
+    loadManagers();
+
+    // ===== タレント一覧取得 =====
+    let talentDocs = []; // {id, data} の配列
+
+    const talentsRef = collection(db, "talents");
+    const talentsQuery = query(talentsRef, orderBy("createdAt", "desc"));
+
+    onSnapshot(talentsQuery, (snapshot) => {
+      talentDocs = snapshot.docs.map((d) => ({
+        id: d.id,
+        data: d.data(),
+      }));
+      renderList();
+    }, (err) => {
+      console.error(err);
+      showError("タレント一覧の取得中にエラーが発生しました。");
+    });
+
+    // ===== フィルタ入力イベント =====
+    searchInput.addEventListener("input", () => renderList());
+    categoryFilter.addEventListener("change", () => renderList());
+    statusFilter.addEventListener("change", () => renderList());
+
+    // ===== 一覧描画 =====
+    function renderList() {
+      hideError();
+
+      const keyword = searchInput.value.trim().toLowerCase();
+      const cat = categoryFilter.value;
+      const status = statusFilter.value;
+
+      const filtered = talentDocs.filter(({ id, data }) => {
+        const name = (data.name || "").toLowerCase();
+        const email = (data.email || "").toLowerCase();
+        const tid = (id || "").toLowerCase();
+        const mainCat = data.mainCategory || "";
+        const st = data.status || "active";
+
+        if (cat && mainCat !== cat) return false;
+        if (status && st !== status) return false;
+
+        if (!keyword) return true;
+        return (
+          name.includes(keyword) ||
+          email.includes(keyword) ||
+          tid.includes(keyword)
+        );
+      });
+
+      if (filtered.length === 0) {
+        talentListEl.innerHTML = "";
+        emptyStateEl.style.display = "block";
+        return;
+      }
+
+      emptyStateEl.style.display = "none";
+
+      let html = "";
+      for (const { id, data } of filtered) {
+        const name = data.name || "(no name)";
+        const email = data.email || "";
+        const mainCat = data.mainCategory || "-";
+        const st = data.status || "active";
+
+        const realName = data.realName || "";
+        const furigana = data.furigana || "";
+        const birthday = data.birthday || "";
+        const address = data.address || "";
+        const note = data.note || "";
+        const uid = data.uid || "";
+        // 互換性のため managerUserId と managerId の両方を見る
+        const managerUserId = data.managerUserId || data.managerId || "";
+        const linksArr = Array.isArray(data.links) ? data.links : [];
+        const linksText = linksArr.join("\n");
+
+        const platformIds = data.platformIds || {};
+        const platformLines = [];
+        for (const key in platformIds) {
+          if (Object.prototype.hasOwnProperty.call(platformIds, key)) {
+            platformLines.push(`${key}: ${platformIds[key]}`);
+          }
+        }
+        const platformText = platformLines.length > 0
+          ? platformLines.join("\n")
+          : "(プラットフォームIDは未登録です)";
+
+        const createdAtStr =
+          data.createdAt && data.createdAt.toDate
+            ? data.createdAt.toDate().toLocaleString("ja-JP")
+            : "-";
+        const updatedAtStr =
+          data.updatedAt && data.updatedAt.toDate
+            ? data.updatedAt.toDate().toLocaleString("ja-JP")
+            : "-";
+
+        html += `
+          <div class="talent-row" data-id="${escAttr(id)}">
+            <div class="talent-row-main">
+              <div>
+                <div class="talent-name">${escAttr(name)}</div>
+                <div class="talent-id">${escAttr(id)}</div>
+              </div>
+              <div class="col-email" style="font-size:12px; word-break:break-all;">
+                ${escAttr(email)}
+              </div>
+              <div style="font-size:12px;">${escAttr(mainCat)}</div>
+              <div class="col-status-label">
+                <span class="${statusClass(st)}">${escAttr(st)}</span>
+              </div>
+              <div style="text-align:right;">
+                <button type="button" class="btn btn-sm talent-toggle" data-id="${escAttr(id)}">
+                  詳細
+                </button>
+              </div>
+            </div>
+
+            <div class="detail-panel" id="detail-${escAttr(id)}">
+              <div class="detail-grid">
+                <!-- ID / UID -->
+                <div class="detail-field">
+                  <label>talentドキュメントID（読み取り専用）</label>
+                  <input type="text" value="${escAttr(id)}" readonly />
+                </div>
+                <div class="detail-field">
+                  <label>Auth UID（読み取り専用）</label>
+                  <input type="text" id="uid-${escAttr(id)}" value="${escAttr(uid)}" readonly />
+                </div>
+
+                <!-- 基本情報 -->
+                <div class="detail-field">
+                  <label>タレント名</label>
+                  <input type="text" id="name-${escAttr(id)}" value="${escAttr(name)}" />
+                </div>
+                <div class="detail-field">
+                  <label>本名</label>
+                  <input type="text" id="realName-${escAttr(id)}" value="${escAttr(realName)}" />
+                </div>
+                <div class="detail-field">
+                  <label>ふりがな</label>
+                  <input type="text" id="furigana-${escAttr(id)}" value="${escAttr(furigana)}" />
+                </div>
+                <div class="detail-field">
+                  <label>生年月日</label>
+                  <input type="date" id="birthday-${escAttr(id)}" value="${escAttr(birthday)}" />
+                </div>
+
+                <div class="detail-field">
+                  <label>メインカテゴリ</label>
+                  <select id="mainCategory-${escAttr(id)}">
+                    ${renderCategoryOptions(data.mainCategory || "")}
+                  </select>
+                </div>
+                <div class="detail-field">
+                  <label>メールアドレス</label>
+                  <input type="email" id="email-${escAttr(id)}" value="${escAttr(email)}" />
+                </div>
+
+                <!-- ステータス / 担当マネージャー -->
+                <div class="detail-field">
+                  <label>ステータス</label>
+                  <select id="status-${escAttr(id)}">
+                    ${renderStatusOptions(data.status || "active")}
+                  </select>
+                </div>
+                <div class="detail-field">
+                  <label>担当マネージャー</label>
+                  <select
+                    id="managerUserId-${escAttr(id)}"
+                    data-manager-select="true"
+                    data-current-manager="${escAttr(managerUserId)}"
+                  >
+                    ${
+                      managerLoaded
+                        ? renderManagerOptions(managerUserId)
+                        : '<option value="">読み込み中...</option>'
+                    }
+                  </select>
+                  <div class="helper-text">
+                    usersコレクションから isManager = true のユーザーを自動取得しています。
+                  </div>
+                </div>
+
+                <!-- 住所 -->
+                <div class="detail-field" style="grid-column:1 / -1;">
+                  <label>住所</label>
+                  <textarea id="address-${escAttr(id)}">${escTextarea(address)}</textarea>
+                </div>
+
+                <!-- 各種リンク -->
+                <div class="detail-field" style="grid-column:1 / -1;">
+                  <label>各種リンク（1行1URL）</label>
+                  <textarea id="links-${escAttr(id)}" placeholder="https://... を1行ずつ">${escTextarea(linksText)}</textarea>
+                </div>
+
+                <!-- メモ -->
+                <div class="detail-field" style="grid-column:1 / -1;">
+                  <label>メモ</label>
+                  <textarea id="note-${escAttr(id)}">${escTextarea(note)}</textarea>
+                </div>
+
+                <!-- プラットフォームID（読み取り専用） -->
+                <div class="detail-field" style="grid-column:1 / -1;">
+                  <label>プラットフォームID一覧（読み取り専用）</label>
+                  <textarea class="readonly" id="platformIds-${escAttr(id)}" readonly>${escTextarea(platformText)}</textarea>
+                </div>
+              </div>
+
+              <div class="detail-footer">
+                <div class="detail-info">
+                  作成: ${createdAtStr} ／ 最終更新: ${updatedAtStr}
+                </div>
+                <div>
+                  <button type="button" class="btn btn-sm talent-save" data-id="${escAttr(id)}">
+                    保存
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      talentListEl.innerHTML = html;
+
+      // 詳細開閉イベント
+      document.querySelectorAll(".talent-toggle").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-id");
+          toggleDetail(id);
+        });
+      });
+
+      // 保存イベント
+      document.querySelectorAll(".talent-save").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-id");
+          saveTalent(id);
+        });
+      });
+
+      // マネージャープルダウンの中身を最新化
+      refreshAllManagerSelects();
+    }
+
+    function renderCategoryOptions(selected) {
+      const options = [
+        "", "Vtuber","Streamer","MixChannel","TikTok","IRIAM","Creator","palmu","Mirrativ"
+      ];
+      return options.map(v => {
+        if (!v) return `<option value="">選択なし</option>`;
+        const sel = v === selected ? "selected" : "";
+        return `<option value="${v}" ${sel}>${v}</option>`;
+      }).join("");
+    }
+
+    function renderStatusOptions(selected) {
+      const options = ["active", "paused", "graduated"];
+      return options.map(v => {
+        const sel = v === selected ? "selected" : "";
+        return `<option value="${v}" ${sel}>${v}</option>`;
+      }).join("");
+    }
+
+    // ===== 詳細タブ開閉 =====
+    function toggleDetail(id) {
+      const panel = document.getElementById(`detail-${id}`);
+      if (!panel) return;
+
+      const isVisible = panel.style.display === "block";
+
+      // 他を全部閉じる
+      document.querySelectorAll(".detail-panel").forEach(p => {
+        p.style.display = "none";
+      });
+
+      panel.style.display = isVisible ? "none" : "block";
+    }
+
+    // ===== 保存処理 =====
+    async function saveTalent(id) {
+      hideError();
+
+      const nameEl = document.getElementById(`name-${id}`);
+      const realNameEl = document.getElementById(`realName-${id}`);
+      const furiganaEl = document.getElementById(`furigana-${id}`);
+      const birthdayEl = document.getElementById(`birthday-${id}`);
+      const mainCategoryEl = document.getElementById(`mainCategory-${id}`);
+      const emailEl = document.getElementById(`email-${id}`);
+      const statusEl = document.getElementById(`status-${id}`);
+      const noteEl = document.getElementById(`note-${id}`);
+      const addressEl = document.getElementById(`address-${id}`);
+      const managerUserIdEl = document.getElementById(`managerUserId-${id}`);
+      const linksEl = document.getElementById(`links-${id}`);
+
+      if (!nameEl || !mainCategoryEl || !emailEl) return;
+
+      const name = nameEl.value.trim();
+      const mainCategory = mainCategoryEl.value;
+      const email = emailEl.value.trim();
+
+      if (!name) {
+        showError("タレント名は必須です。");
+        return;
+      }
+
+      // links: 改行区切り → 配列
+      let links = [];
+      if (linksEl && linksEl.value) {
+        links = linksEl.value
+          .split("\n")
+          .map(v => v.trim())
+          .filter(v => v.length > 0);
+      }
+
+      const managerUidVal = managerUserIdEl && managerUserIdEl.value
+        ? managerUserIdEl.value.trim()
+        : "";
+
+      try {
+        const ref = doc(db, "talents", id);
+        await updateDoc(ref, {
+          name,
+          realName: realNameEl.value.trim() || null,
+          furigana: furiganaEl.value.trim() || null,
+          birthday: birthdayEl.value || null,
+          address: addressEl.value.trim() || null,
+          mainCategory: mainCategory || null,
+          email: email || null,
+          status: statusEl.value || "active",
+          note: noteEl.value.trim() || null,
+          links,
+          // 担当マネージャーUIDを talents ドキュメント両方のフィールドに同期
+          managerUserId: managerUidVal || null,
+          managerId: managerUidVal || null,
+          updatedAt: serverTimestamp(),
+          // platformIds はここでは変更しない（閲覧専用）
+        });
+        showSuccess("タレント情報を保存しました。");
+      } catch (err) {
+        console.error(err);
+        showError("タレント情報の保存中にエラーが発生しました。");
+      }
+    }
+  </script>
+</body>
+</html>

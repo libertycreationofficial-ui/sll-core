@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Star Little Luna CORE - 人事管理</title>
+  <style>
+    :root {
+      --sl-bg: #f9fbff;
+      --sl-gradient-from: #f5ddff;
+      --sl-gradient-to: #cbe8ff;
+      --sl-primary: #c382ff;
+      --sl-primary-soft: #f6ebff;
+      --sl-accent: #ff8ad8;
+      --sl-text: #2f3244;
+      --sl-muted: #8f93a8;
+      --sl-card: #ffffff;
+      --sl-border: #e4e6f3;
+      --sl-chip-bg: #f7f7ff;
+      --danger: #e63946;
+      --success: #0f9d58;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Hiragino Sans", "Yu Gothic", sans-serif;
+      min-height: 100vh;
+      display: flex;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0.97)),
+        linear-gradient(135deg, var(--sl-gradient-from), var(--sl-gradient-to));
+      color: var(--sl-text);
+    }
+
+    .page {
+      flex: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 18px 22px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* ヘッダー */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-block {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo {
+      width: 120px;
+      height: 120px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .brand-text-sub {
+      font-size: 11px;
+      color: var(--sl-muted);
+    }
+
+    .tag {
+      font-size: 11px;
+      color: var(--sl-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      margin-top: 4px;
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .page-subtitle {
+      font-size: 12px;
+      color: var(--sl-muted);
+    }
+
+    /* ユーザー情報・ボタン */
+    .user-block {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .user-pill {
+      font-size: 13px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--sl-chip-bg);
+      border: 1px solid var(--sl-border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .user-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 20%, #ffffff, #9fd4ff);
+    }
+
+    .user-name {
+      font-weight: 600;
+    }
+
+    .user-role {
+      font-size: 11px;
+      color: var(--sl-muted);
+    }
+
+    .btn {
+      font-size: 12px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--sl-border);
+      background: #ffffff;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.1s, box-shadow 0.1s, transform 0.08s;
+    }
+
+    .btn:hover {
+      background: #f7f5ff;
+      box-shadow: 0 4px 10px rgba(183, 188, 228, 0.45);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      border: none;
+      background: linear-gradient(135deg, var(--sl-primary), var(--sl-accent));
+      color: #ffffff;
+      box-shadow: 0 8px 18px rgba(196,129,255,0.6);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 10px 22px rgba(196,129,255,0.7);
+    }
+
+    /* バナー */
+    .error-banner {
+      display: none;
+      padding: 8px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      color: #e63946;
+      background: #ffe8eb;
+      border: 1px solid #ffc4ce;
+    }
+
+    .error-banner.visible {
+      display: block;
+    }
+
+    .info-banner {
+      padding: 8px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      color: var(--sl-muted);
+      background: #f6f2ff;
+      border: 1px solid #e1d7ff;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #f7f3ff;
+      border: 1px solid #e3d6ff;
+      color: var(--sl-primary);
+      margin-right: 6px;
+      margin-top: 4px;
+    }
+
+    .loading-text {
+      font-size: 12px;
+      color: var(--sl-muted);
+    }
+
+    /* KPI 行 */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 1024px) {
+      .kpi-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 0 6px;
+      }
+      .page {
+        padding: 16px 10px 20px;
+      }
+      .top-bar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .kpi-row {
+        grid-template-columns: 1fr;
+      }
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .kpi-card {
+      background: var(--sl-card);
+      border-radius: 18px;
+      padding: 12px 14px;
+      border: 1px solid var(--sl-border);
+      box-shadow: 0 8px 18px rgba(186,199,255,0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .kpi-label {
+      font-size: 11px;
+      color: var(--sl-muted);
+    }
+
+    .kpi-value {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .kpi-sub {
+      font-size: 11px;
+      color: var(--sl-muted);
+    }
+
+    .kpi-pill {
+      align-self: flex-start;
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid #e3d6ff;
+      background: #f7f3ff;
+      color: var(--sl-primary);
+    }
+
+    /* セクションタイトル */
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+
+    /* メニューカード */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 1024px) {
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .menu-card {
+      background: var(--sl-card);
+      border-radius: 20px;
+      padding: 14px 14px 16px;
+      border: 1px solid var(--sl-border);
+      box-shadow: 0 10px 25px rgba(186,199,255,0.4);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 136px;
+      cursor: pointer;
+      text-decoration: none;
+      color: var(--sl-text);
+      transition: transform 0.08s ease-out, box-shadow 0.1s ease-out, border-color 0.1s;
+    }
+
+    .menu-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 32px rgba(186,199,255,0.5);
+      border-color: var(--sl-primary-soft);
+    }
+
+    .menu-title-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .menu-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .menu-tag {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #f7f3ff;
+      border: 1px solid #e3d6ff;
+      color: var(--sl-primary);
+      white-space: nowrap;
+    }
+
+    .menu-desc {
+      font-size: 12px;
+      color: var(--sl-muted);
+      line-height: 1.5;
+    }
+
+    .menu-footer {
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--sl-primary);
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .menu-card[data-visible="false"] {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- ヘッダー -->
+    <header class="top-bar">
+      <div>
+        <div class="brand-block">
+          <div class="brand-logo">
+            <img src="../assets/slllogo.png" alt="Star Little Luna Logo" />
+          </div>
+          <div>
+            <div class="brand-text-sub">HR Management Center</div>
+          </div>
+        </div>
+        <div class="tag">Admin / HR</div>
+        <div class="page-title">人事管理ダッシュボード</div>
+        <div class="page-subtitle">
+          役員・社員・マネージャーの人事情報、評価・面談・採用・契約をまとめて管理する画面です。
+        </div>
+      </div>
+
+      <div class="user-block">
+        <button class="btn" id="back-admin-btn">Adminトップへ</button>
+        <button class="btn" id="go-management-btn">タレント管理メニュー</button>
+        <div class="user-pill" id="user-pill" style="visibility:hidden;">
+          <div class="user-avatar"></div>
+          <div>
+            <div class="user-name" id="user-name">ユーザー</div>
+            <div class="user-role" id="user-role">role</div>
+          </div>
+        </div>
+        <button class="btn" id="logout-btn">ログアウト</button>
+      </div>
+    </header>
+
+    <!-- バナー -->
+    <div id="error-banner" class="error-banner"></div>
+    <div id="info-banner" class="info-banner">
+      <span id="role-info-text">
+        ログイン情報と人事サマリーを読み込んでいます…
+      </span>
+    </div>
+
+    <!-- ローディング -->
+    <div id="loading" class="loading-text">
+      Firebase Auth / Firestore からデータを取得中です…
+    </div>
+
+    <!-- KPIエリア -->
+    <section id="kpi-section" style="display:none;">
+      <div class="kpi-row">
+        <!-- 1. 役員数 -->
+        <div class="kpi-card">
+          <div class="kpi-label">役員数</div>
+          <div class="kpi-value" id="kpi-executive-count">-</div>
+          <div class="kpi-sub" id="kpi-executive-sub">executive アカウント</div>
+          <div class="kpi-pill">Executives</div>
+        </div>
+
+        <!-- 2. 社員・マネージャー数 -->
+        <div class="kpi-card">
+          <div class="kpi-label">社員・マネージャー数</div>
+          <div class="kpi-value" id="kpi-staff-count">-</div>
+          <div class="kpi-sub" id="kpi-staff-sub">うちマネージャー：- 名</div>
+          <div class="kpi-pill">Staff</div>
+        </div>
+
+        <!-- 3. Admin権限数 -->
+        <div class="kpi-card">
+          <div class="kpi-label">Admin権限ユーザー</div>
+          <div class="kpi-value" id="kpi-admin-count">-</div>
+          <div class="kpi-sub" id="kpi-admin-sub">全ユーザー数に対する割合：- %</div>
+          <div class="kpi-pill">System</div>
+        </div>
+
+        <!-- 4. 評価・面談（hrSummaryがあれば） -->
+        <div class="kpi-card">
+          <div class="kpi-label">今期の評価・面談状況</div>
+          <div class="kpi-value" id="kpi-eval-count">-</div>
+          <div class="kpi-sub" id="kpi-eval-sub">評価: - 件 / 面談: - 件</div>
+          <div class="kpi-pill">HR Cycle</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- メニューエリア -->
+    <section id="menu-section" style="display:none;">
+      <div class="section-title">人事管理メニュー</div>
+      <div class="grid" id="menu-grid">
+        <!-- 1. 人事マスタ一覧 -->
+        <a href="./hr-people-list.html"
+           class="menu-card"
+           data-key="hr-people-list"
+           data-visible-for="admin,executive">
+          <div>
+            <div class="menu-title-row">
+              <div class="menu-title">役員・社員・マネージャーマスタ一覧</div>
+              <div class="menu-tag">People Master</div>
+            </div>
+            <div class="menu-desc">
+              Star Little Luna社の役員・社員・マネージャー情報を一覧・検索します。
+              所属部署・役職・雇用形態・連絡先などを確認できます。
+            </div>
+          </div>
+          <div class="menu-footer">
+            開く →
+          </div>
+        </a>
+
+        <!-- 2. 新規人事登録フォーム -->
+        <a href="./hr-people-create.html"
+           class="menu-card"
+           data-key="hr-people-create"
+           data-visible-for="admin,executive">
+          <div>
+            <div class="menu-title-row">
+              <div class="menu-title">人事登録フォーム（社員・マネージャー・役員）</div>
+              <div class="menu-tag">New Person</div>
+            </div>
+            <div class="menu-desc">
+              新しい社員やマネージャー、役員を登録します。
+              Firebase Authのアカウント作成と人事マスタ登録を同時に行う設計を想定しています。
+            </div>
+          </div>
+          <div class="menu-footer">
+            開く →
+          </div>
+        </a>
+
+        <!-- 3. 組織図・ポジション管理 -->
+        <a href="./hr-orgchart.html"
+           class="menu-card"
+           data-key="hr-orgchart"
+           data-visible-for="admin,executive">
+          <div>
+            <div class="menu-title-row">
+              <div class="menu-title">組織図・ポジション管理</div>
+              <div class="menu-tag">Org Chart</div>
+            </div>
+            <div class="menu-desc">
+              経営本部・プロダクション部・財務部・システム部・秘書室など、
+              部署別の組織図とポジションを可視化します。
+            </div>
+          </div>
+          <div class="menu-footer">
+            開く →
+          </div>
+        </a>
+
+        <!-- 4. 評価・フィードバック管理 -->
+        <a href="./hr-evaluations.html"
+           class="menu-card"
+           data-key="hr-evaluations"
+           data-visible-for="admin,executive">
+          <div>
+            <div class="menu-title-row">
+              <div class="menu-title">評価・フィードバック管理</div>
+              <div class="menu-tag">Evaluations</div>
+            </div>
+            <div class="menu-desc">
+              半期評価・目標管理・1on1フィードバックなどの評価情報を管理し、
+              昇給や人事異動の判断材料として蓄積します。
+            </div>
+          </div>
+          <div class="menu-footer">
+            開く →
+          </div>
+        </a>
+
+        <!-- 5. 採用・応募者管理 -->
+        <a href="./hr-recruit.html"
+           class="menu-card"
+           data-key="hr-recruit"
+           data-visible-for="admin,executive">
+          <div>
+            <div class="menu-title-row">
+              <div class="menu-title">採用・応募者管理</div>
+              <div class="menu-tag">Recruiting</div>
+            </div>
+            <div class="menu-desc">
+              応募者情報・書類選考・面接日程・評価メモ・合否管理など、
+              採用プロセス全体をトラッキングします。
+            </div>
+          </div>
+          <div class="menu-footer">
+            開く →
+          </div>
+        </a>
+
+        <!-- 6. 契約・雇用形態管理 -->
+        <a href="./hr-contracts.html"
+           class="menu-card"
+           data-key="hr-contracts"
+           data-visible-for="admin,executive">
+          <div>
+            <div class="menu-title-row">
+              <div class="menu-title">契約・雇用形態管理</div>
+              <div class="menu-tag">Contracts</div>
+            </div>
+            <div class="menu-desc">
+              正社員・契約社員・アルバイト・業務委託など、
+              雇用形態や契約期間・更新日・試用期間などを一元管理します。
+            </div>
+          </div>
+          <div class="menu-footer">
+            開く →
+          </div>
+        </a>
+
+        <!-- 7. タレント×人事リンク -->
+        <a href="./hr-talent-link.html"
+           class="menu-card"
+           data-key="hr-talent-link"
+           data-visible-for="admin,executive">
+          <div>
+            <div class="menu-title-row">
+              <div class="menu-title">タレント×人事リンク管理</div>
+              <div class="menu-tag">Talent Link</div>
+            </div>
+            <div class="menu-desc">
+              マネージャー担当範囲・タレント側からの評価・
+              タレントとの面談記録などを、人事データと紐づけて管理します。
+            </div>
+          </div>
+          <div class="menu-footer">
+            開く →
+          </div>
+        </a>
+      </div>
+    </section>
+  </div>
+
+  <!-- Firebase / Auth / Firestore -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      collection,
+      getDocs
+    } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+    // Firebase設定（そのまま）
+    const firebaseConfig = {
+      apiKey: "AIzaSyAtCdoQIc-WjKp_Jl1DpAPxHOSByE3mjNM",
+      authDomain: "lss-core-9ad4b.firebaseapp.com",
+      projectId: "lss-core-9ad4b",
+      storageBucket: "lss-core-9ad4b.firebasestorage.app",
+      messagingSenderId: "783909822598",
+      appId: "1:783909822598:web:7a7b7c5dd52e31fd01b107",
+      measurementId: "G-CSDMWDJN3S"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // DOM
+    const errorBanner = document.getElementById("error-banner");
+    const roleInfoText = document.getElementById("role-info-text");
+    const loadingEl = document.getElementById("loading");
+
+    const userPill = document.getElementById("user-pill");
+    const userNameEl = document.getElementById("user-name");
+    const userRoleEl = document.getElementById("user-role");
+
+    const logoutBtn = document.getElementById("logout-btn");
+    const goManagementBtn = document.getElementById("go-management-btn");
+    const backAdminBtn = document.getElementById("back-admin-btn");
+
+    const kpiSection = document.getElementById("kpi-section");
+    const menuSection = document.getElementById("menu-section");
+    const menuCards = document.querySelectorAll(".menu-card");
+
+    const kpiExecutiveCount = document.getElementById("kpi-executive-count");
+    const kpiExecutiveSub = document.getElementById("kpi-executive-sub");
+    const kpiStaffCount = document.getElementById("kpi-staff-count");
+    const kpiStaffSub = document.getElementById("kpi-staff-sub");
+    const kpiAdminCount = document.getElementById("kpi-admin-count");
+    const kpiAdminSub = document.getElementById("kpi-admin-sub");
+    const kpiEvalCount = document.getElementById("kpi-eval-count");
+    const kpiEvalSub = document.getElementById("kpi-eval-sub");
+
+    function showError(msg) {
+      errorBanner.textContent = msg;
+      errorBanner.classList.add("visible");
+    }
+
+    function hideError() {
+      errorBanner.textContent = "";
+      errorBanner.classList.remove("visible");
+    }
+
+    function roleLabelJa(roleType, isManager, isAdmin) {
+      if (roleType === "talent") return "タレントアカウント";
+      if (roleType === "staff") {
+        if (isManager && isAdmin) return "管理職（Admin権限あり）";
+        if (isManager) return "マネージャー / 社員";
+        if (isAdmin) return "社員（Admin権限あり）";
+        return "社員アカウント";
+      }
+      if (roleType === "executive") {
+        if (isAdmin) return "役員 / 社長（Admin）";
+        return "役員アカウント";
+      }
+      return "未設定アカウント";
+    }
+
+    function applyMenuVisibilityForHR(isAdmin, roleType) {
+      // Admin or executive以外は入れない
+      if (!isAdmin && roleType !== "executive") {
+        roleInfoText.textContent =
+          "このページは人事管理のAdmin専用です。ダッシュボードへ戻ります。";
+        setTimeout(() => {
+          window.location.href = "./admin-dashboard.html";
+        }, 1500);
+        return;
+      }
+
+      // Admin / executive → 全メニュー表示（必要になったら細かく制御可能）
+      menuCards.forEach(card => {
+        card.dataset.visible = "true";
+        card.style.display = "flex";
+      });
+
+      kpiSection.style.display = "block";
+      menuSection.style.display = "block";
+    }
+
+    // 人事サマリー読み込み
+    async function loadHrSummary() {
+      // 1. hrSummary/hrDashboard ドキュメントがあればそちらを優先
+      try {
+        const hrSumRef = doc(db, "hrSummary", "hrDashboard");
+        const hrSumSnap = await getDoc(hrSumRef);
+        if (hrSumSnap.exists()) {
+          const h = hrSumSnap.data();
+          const execCount = h.executiveCount ?? null;
+          const staffCount = h.staffCount ?? null;
+          const managerCount = h.managerCount ?? null;
+          const adminCount = h.adminCount ?? null;
+          const totalUsers = h.totalUsers ?? null;
+          const evalCount = h.evalCount ?? null;
+          const interviewCount = h.interviewCount ?? null;
+
+          if (execCount !== null) {
+            kpiExecutiveCount.textContent = execCount.toString();
+            kpiExecutiveSub.textContent = `executive アカウント：${execCount} 名`;
+          }
+
+          if (staffCount !== null && managerCount !== null) {
+            kpiStaffCount.textContent = staffCount.toString();
+            kpiStaffSub.textContent = `うちマネージャー：${managerCount} 名`;
+          }
+
+          if (adminCount !== null && totalUsers !== null && totalUsers > 0) {
+            const ratio = Math.round((adminCount / totalUsers) * 1000) / 10; // 小数1桁
+            kpiAdminCount.textContent = adminCount.toString();
+            kpiAdminSub.textContent = `全ユーザー ${totalUsers} 名中 ${ratio}%`;
+          }
+
+          if (evalCount !== null && interviewCount !== null) {
+            kpiEvalCount.textContent = (evalCount + interviewCount).toString();
+            kpiEvalSub.textContent = `評価：${evalCount} 件 / 面談：${interviewCount} 件`;
+          }
+          return; // hrSummary が読めたらここで終了
+        }
+      } catch (e) {
+        console.warn("hrSummary load error, fallback to direct collections.", e);
+      }
+
+      // 2. フォールバック：users コレクションから直接集計
+      try {
+        const usersRef = collection(db, "users");
+        const usersSnap = await getDocs(usersRef);
+        let execCount = 0;
+        let staffCount = 0;
+        let managerCount = 0;
+        let adminCount = 0;
+        let totalUsers = 0;
+
+        usersSnap.forEach(docSnap => {
+          const d = docSnap.data();
+          totalUsers += 1;
+          const roleType = d.roleType;
+          const isManager = !!d.isManager;
+          const isAdmin = !!d.isAdmin;
+
+          if (roleType === "executive") {
+            execCount += 1;
+          } else if (roleType === "staff") {
+            staffCount += 1;
+          }
+
+          if (isManager) managerCount += 1;
+          if (isAdmin) adminCount += 1;
+        });
+
+        kpiExecutiveCount.textContent = execCount.toString();
+        kpiExecutiveSub.textContent = `executive アカウント：${execCount} 名`;
+
+        kpiStaffCount.textContent = staffCount.toString();
+        kpiStaffSub.textContent = `うちマネージャー：${managerCount} 名`;
+
+        if (totalUsers > 0) {
+          const ratio = Math.round((adminCount / totalUsers) * 1000) / 10;
+          kpiAdminCount.textContent = adminCount.toString();
+          kpiAdminSub.textContent = `全ユーザー ${totalUsers} 名中 ${ratio}%`;
+        } else {
+          kpiAdminCount.textContent = "-";
+          kpiAdminSub.textContent = "users コレクション未設定";
+        }
+
+        kpiEvalCount.textContent = "-";
+        kpiEvalSub.textContent = "hrSummary または evaluations コレクション未設定";
+      } catch (err) {
+        console.error("loadHrSummary fallback error:", err);
+        kpiExecutiveCount.textContent = "-";
+        kpiStaffCount.textContent = "-";
+        kpiAdminCount.textContent = "-";
+        kpiEvalCount.textContent = "-";
+        kpiEvalSub.textContent = "Firestore からの集計中にエラーが発生しました。";
+      }
+    }
+
+    // ログアウト
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+      window.location.href = "../login.html";
+    });
+
+    // タレント管理メニューへ
+    goManagementBtn.addEventListener("click", () => {
+      window.location.href = "./management-menu.html"; // ファイル名に合わせて調整
+    });
+
+    // Admin Dashboardへ戻る
+    backAdminBtn.addEventListener("click", () => {
+      window.location.href = "./admin-dashboard.html"; // Adminトップのパス
+    });
+
+    // Auth 状態監視
+    onAuthStateChanged(auth, async (user) => {
+      hideError();
+
+      if (!user) {
+        window.location.href = "../login.html";
+        return;
+      }
+
+      try {
+        const ref = doc(db, "users", user.uid);
+        const snap = await getDoc(ref);
+
+        if (!snap.exists()) {
+          showError("ユーザー情報が登録されていません。管理者にお問い合わせください。");
+          loadingEl.textContent = "ユーザーデータが見つかりませんでした。";
+          return;
+        }
+
+        const data = snap.data();
+        const displayName = data.displayName || user.displayName || "No Name";
+        const roleType = data.roleType || "staff";
+        const isManager = !!data.isManager;
+        const isAdmin = !!data.isAdmin;
+
+        userPill.style.visibility = "visible";
+        userNameEl.textContent = displayName;
+        userRoleEl.textContent = roleLabelJa(roleType, isManager, isAdmin);
+
+        roleInfoText.innerHTML = `
+          <div class="badge-pill">roleType: <strong>${roleType}</strong></div>
+          ${isManager ? '<div class="badge-pill">マネージャー権限</div>' : ""}
+          ${isAdmin ? '<div class="badge-pill">Admin権限</div>' : ""}
+          <br />
+          このページでは、役員・社員・マネージャーの人事情報や評価・面談・採用・契約など、
+          「人事」に関わる情報にアクセスできます。
+        `;
+
+        loadingEl.style.display = "none";
+
+        // 権限による表示制御
+        applyMenuVisibilityForHR(isAdmin, roleType);
+
+        // 人事サマリーのロード
+        await loadHrSummary();
+
+      } catch (err) {
+        console.error(err);
+        showError("ユーザー情報の取得中にエラーが発生しました。");
+        loadingEl.textContent =
+          "エラーが発生しました。再読み込みしても改善しない場合は管理者に連絡してください。";
+      }
+    });
+  </script>
+</body>
+</html>

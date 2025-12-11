@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Star Little Luna CORE - Live Monitor</title>
+  <style>
+    :root {
+      --sl-bg: #f9fbff;
+      --sl-gradient-from: #f5ddff;
+      --sl-gradient-to: #cbe8ff;
+      --sl-primary: #c382ff;
+      --sl-accent: #ff8ad8;
+      --sl-text: #2f3244;
+      --sl-muted: #8f93a8;
+      --sl-card: #ffffff;
+      --sl-border: #e4e6f3;
+      --sl-chip-bg: #f7f7ff;
+      --danger: #e63946;
+      --success: #0f9d58;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Hiragino Sans", "Yu Gothic", sans-serif;
+      min-height: 100vh;
+      display: flex;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.95)),
+        linear-gradient(135deg, var(--sl-gradient-from), var(--sl-gradient-to));
+      color: var(--sl-text);
+    }
+
+    .page {
+      flex: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 18px 22px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-block {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #fff8ff, #b0d9ff);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 14px rgba(154,123,255,0.45);
+    }
+
+    .brand-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .brand-text-main {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .brand-text-sub {
+      font-size: 11px;
+      color: var(--sl-muted);
+    }
+
+    .tag {
+      font-size: 11px;
+      color: var(--sl-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      margin-top: 4px;
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .page-subtitle {
+      font-size: 12px;
+      color: var(--sl-muted);
+    }
+
+    .user-block {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-pill {
+      font-size: 13px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--sl-chip-bg);
+      border: 1px solid var(--sl-border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .user-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 20%, #ffffff, #9fd4ff);
+    }
+
+    .user-name {
+      font-weight: 600;
+    }
+
+    .user-role {
+      font-size: 11px;
+      color: var(--sl-muted);
+    }
+
+    .btn {
+      font-size: 12px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--sl-border);
+      background: #ffffff;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.1s, box-shadow 0.1s, transform 0.08s;
+    }
+
+    .btn:hover {
+      background: #f7f5ff;
+      box-shadow: 0 4px 10px rgba(183, 188, 228, 0.45);
+      transform: translateY(-1px);
+    }
+
+    .btn-sm {
+      padding: 4px 10px;
+      font-size: 11px;
+    }
+
+    .btn-pill {
+      border-radius: 999px;
+    }
+
+    .btn-primary {
+      border: none;
+      background: linear-gradient(135deg, var(--sl-primary), var(--sl-accent));
+      color: #ffffff;
+      box-shadow: 0 8px 18px rgba(196,129,255,0.6);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 10px 22px rgba(196,129,255,0.7);
+    }
+
+    .error-banner {
+      display: none;
+      padding: 8px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      color: var(--danger);
+      background: #ffe8eb;
+      border: 1px solid #ffc4ce;
+    }
+
+    .error-banner.visible { display: block; }
+
+    .success-banner {
+      display: none;
+      padding: 8px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      color: var(--success);
+      background: #e6f4ea;
+      border: 1px solid #c8e6c9;
+      margin-top: 4px;
+    }
+
+    .success-banner.visible { display: block; }
+
+    /* --- 上部サマリー帯 --- */
+    .summary-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .summary-card {
+      background: var(--sl-card);
+      border-radius: 18px;
+      padding: 10px 12px;
+      border: 1px solid var(--sl-border);
+      box-shadow: 0 6px 14px rgba(186,199,255,0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .summary-label {
+      font-size: 11px;
+      color: var(--sl-muted);
+    }
+
+    .summary-value {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .summary-sub {
+      font-size: 11px;
+      color: var(--sl-muted);
+    }
+
+    .summary-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      background: var(--sl-chip-bg);
+      border: 1px solid var(--sl-border);
+      margin-left: 4px;
+    }
+
+    .trend-up {
+      color: #0f9d58;
+    }
+    .trend-down {
+      color: #e53935;
+    }
+
+    /* --- ツールバー --- */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .toolbar input,
+    .toolbar select {
+      padding: 6px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--sl-border);
+      background: #ffffff;
+      font-size: 12px;
+      min-width: 160px;
+    }
+
+    /* --- Live Monitor メインカード --- */
+    .monitor-card {
+      background: var(--sl-card);
+      border-radius: 22px;
+      padding: 14px 16px 16px;
+      border: 1px solid var(--sl-border);
+      box-shadow: 0 10px 24px rgba(186,199,255,0.45);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .monitor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .monitor-header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .monitor-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .monitor-sub {
+      font-size: 11px;
+      color: var(--sl-muted);
+    }
+
+    .monitor-view-mode {
+      display: inline-flex;
+      border-radius: 999px;
+      border: 1px solid var(--sl-border);
+      background: #f7f7ff;
+      overflow: hidden;
+    }
+
+    .monitor-view-mode button {
+      border: none;
+      background: transparent;
+      font-size: 11px;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+
+    .monitor-view-mode button.active {
+      background: #ffffff;
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(183,188,228,0.5);
+    }
+
+    .monitor-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 2px;
+    }
+
+    .monitor-row-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .talent-live-card {
+      border-radius: 16px;
+      padding: 10px 12px;
+      background: #fdfdff;
+      border: 1px solid #f0f1ff;
+      transition: background 0.12s, box-shadow 0.12s, transform 0.08s;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .talent-live-card:hover {
+      background: #f8f5ff;
+      box-shadow: 0 4px 10px rgba(183,188,228,0.40);
+      transform: translateY(-1px);
+    }
+
+    .talent-live-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .talent-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .talent-live-name {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .talent-live-id {
+      font-size: 11px;
+      color: var(--sl-muted);
+    }
+
+    .live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid #e0e4ff;
+      background: #f7f7ff;
+    }
+
+    .live-pill-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #9e9e9e;
+    }
+
+    .live-pill.live {
+      border-color: #c0e8cf;
+      background: #e8f8ee;
+      color: #0f9d58;
+    }
+
+    .live-pill.live .live-pill-dot {
+      background: #0f9d58;
+    }
+
+    .live-pill.offline {
+      border-color: #e0e0e0;
+      background: #f5f5f5;
+      color: #757575;
+    }
+
+    .live-pill.offline .live-pill-dot {
+      background: #bdbdbd;
+    }
+
+    .live-pill.error {
+      border-color: #ffcdd2;
+      background: #ffebee;
+      color: #e53935;
+    }
+
+    .live-pill.error .live-pill-dot {
+      background: #e53935;
+    }
+
+    .talent-live-body {
+      display: grid;
+      grid-template-columns: 1.1fr 1.3fr;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .stat-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--sl-muted);
+    }
+
+    .stat-main-value {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .stat-sub-line {
+      font-size: 11px;
+      color: var(--sl-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .platform-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 3px;
+    }
+
+    .platform-chip {
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid #dde0ff;
+      background: #f7f7ff;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .platform-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #b39ddb;
+    }
+
+    /* ざっくりプラットフォームごとの色味 */
+    .pf-youtube .platform-dot { background: #ff5252; }
+    .pf-x .platform-dot { background: #000000; }
+    .pf-instagram .platform-dot { background: #f48fb1; }
+    .pf-tiktok .platform-dot { background: #26c6da; }
+    .pf-twitch .platform-dot { background: #b39ddb; }
+    .pf-iriam .platform-dot { background: #64b5f6; }
+    .pf-palmu .platform-dot { background: #81c784; }
+    .pf-mirrativ .platform-dot { background: #4dd0e1; }
+    .pf-mixch .platform-dot { background: #ffb74d; }
+
+    .platform-stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      padding: 4px 6px;
+      border-radius: 10px;
+      background: #ffffff;
+      border: 1px solid #edf0ff;
+      margin-top: 3px;
+    }
+
+    .platform-stat-row strong {
+      font-size: 12px;
+    }
+
+    .timestamp {
+      font-size: 10px;
+      color: var(--sl-muted);
+      margin-top: 2px;
+    }
+
+    .empty-state {
+      padding: 16px 4px 6px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--sl-muted);
+    }
+
+    @media (max-width: 860px) {
+      .page {
+        padding: 16px 12px 24px;
+      }
+      .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .summary-strip {
+        grid-template-columns: 1fr;
+      }
+      .monitor-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .talent-live-body {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- ヘッダー -->
+    <header class="top-bar">
+      <div>
+        <div class="brand-block">
+          <div class="brand-logo">
+            <img src="../assets/slllogo.png" alt="Star Little Luna Logo" />
+          </div>
+          <div>
+            <div class="brand-text-main">Star Little Luna</div>
+            <div class="brand-text-sub">Live Monitor</div>
+          </div>
+        </div>
+        <div class="tag">Management / Live Stats</div>
+        <div class="page-title">タレント リアルタイムモニター</div>
+        <div class="page-subtitle">
+          所属タレントの配信状況をリアルタイムで可視化します。<br />
+          各プラットフォームの同時接続数・フォロワー・登録者数は、バックエンドから定期取得され Firestore の
+          <code style="font-size:10px;">liveStats</code> コレクション経由で自動反映されます。
+        </div>
+      </div>
+
+      <div class="user-block">
+        <button class="btn btn-sm" id="back-management-btn">マネジメントへ</button>
+        <button class="btn btn-sm" id="back-dashboard-btn">ダッシュボード</button>
+
+        <div class="user-pill" id="user-pill" style="visibility:hidden;">
+          <div class="user-avatar"></div>
+          <div>
+            <div class="user-name" id="user-name">ユーザー</div>
+            <div class="user-role" id="user-role">role</div>
+          </div>
+        </div>
+        <button class="btn btn-sm" id="logout-btn">ログアウト</button>
+      </div>
+    </header>
+
+    <div id="error-banner" class="error-banner"></div>
+    <div id="success-banner" class="success-banner"></div>
+
+    <!-- サマリー -->
+    <section class="summary-strip">
+      <div class="summary-card">
+        <div class="summary-label">現在の総同時接続（全プラットフォーム合計）</div>
+        <div class="summary-value" id="summary-total-current">-</div>
+        <div class="summary-sub">
+          前回比:
+          <span id="summary-total-trend" class="">-</span>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-label">配信中タレント数</div>
+        <div class="summary-value" id="summary-live-talents">-</div>
+        <div class="summary-sub">
+          監視対象タレント総数:
+          <span id="summary-total-talents">-</span>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-label">今日の累計視聴数（※バックエンド集計）</div>
+        <div class="summary-value" id="summary-today-views">-</div>
+        <div class="summary-sub">
+          フィールド例:
+          <span class="summary-pill">liveStats.{talent}.todayTotalViews</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ツールバー -->
+    <section class="toolbar">
+      <div class="toolbar-group">
+        <span style="font-size:12px;color:var(--sl-muted);">タレント検索:</span>
+        <input id="search-input" type="text" placeholder="名前 / ID で検索" />
+      </div>
+
+      <div class="toolbar-group">
+        <span style="font-size:12px;color:var(--sl-muted);">プラットフォーム:</span>
+        <select id="platform-filter">
+          <option value="">すべて</option>
+          <option value="youtube">YouTube</option>
+          <option value="twitch">Twitch</option>
+          <option value="x">X</option>
+          <option value="instagram">Instagram</option>
+          <option value="tiktok">TikTok</option>
+          <option value="iriam">IRIAM</option>
+          <option value="palmu">palmu</option>
+          <option value="mirrativ">Mirrativ</option>
+          <option value="mixch">ミクチャ</option>
+        </select>
+      </div>
+
+      <div class="toolbar-group">
+        <span style="font-size:12px;color:var(--sl-muted);">ソート:</span>
+        <select id="sort-mode">
+          <option value="current-desc">総同接 多い順</option>
+          <option value="name-asc">名前 A→Z</option>
+        </select>
+      </div>
+
+      <div class="toolbar-group">
+        <button class="btn btn-sm" id="refresh-hint-btn">データ取得の仕組み</button>
+      </div>
+    </section>
+
+    <!-- Live Monitor 本体 -->
+    <section class="monitor-card">
+      <div class="monitor-header">
+        <div class="monitor-header-left">
+          <div class="monitor-title">Live Monitor</div>
+          <div class="monitor-sub">
+            Firestore <code style="font-size:10px;">liveStats</code> を購読し、
+            Cloud Functions / バックエンドが定期更新した値をリアルタイム表示します。
+          </div>
+        </div>
+        <div class="monitor-header-right">
+          <div class="monitor-view-mode">
+            <button id="view-grid" class="active">グリッド表示</button>
+            <button id="view-list">リスト表示</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="monitor-grid" class="monitor-grid"></div>
+      <div id="monitor-list" class="monitor-row-list" style="display:none;"></div>
+      <div id="empty-state" class="empty-state" style="display:none;">
+        該当するタレントがいません。<br />
+        liveStats コレクションにドキュメントが存在するか、もしくはフィルター条件を確認してください。
+      </div>
+    </section>
+  </div>
+
+  <!-- Firebase ＋ ロジック -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signOut,
+    } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      collection,
+      query,
+      orderBy,
+      onSnapshot,
+    } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+    // ===== Firebase 初期化 =====
+    const firebaseConfig = {
+      apiKey: "AIzaSyAtCdoQIc-WjKp_Jl1DpAPxHOSByE3mjNM",
+      authDomain: "lss-core-9ad4b.firebaseapp.com",
+      projectId: "lss-core-9ad4b",
+      storageBucket: "lss-core-9ad4b.firebasestorage.app",
+      messagingSenderId: "783909822598",
+      appId: "1:783909822598:web:7a7b7c5dd52e31fd01b107",
+      measurementId: "G-CSDMWDJN3S"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // ===== DOM 参照 =====
+    const errorBanner = document.getElementById("error-banner");
+    const successBanner = document.getElementById("success-banner");
+    const userPill = document.getElementById("user-pill");
+    const userNameEl = document.getElementById("user-name");
+    const userRoleEl = document.getElementById("user-role");
+
+    const logoutBtn = document.getElementById("logout-btn");
+    const backDashboardBtn = document.getElementById("back-dashboard-btn");
+    const backManagementBtn = document.getElementById("back-management-btn");
+
+    const searchInput = document.getElementById("search-input");
+    const platformFilter = document.getElementById("platform-filter");
+    const sortModeSelect = document.getElementById("sort-mode");
+    const refreshHintBtn = document.getElementById("refresh-hint-btn");
+
+    const summaryTotalCurrent = document.getElementById("summary-total-current");
+    const summaryTotalTrend = document.getElementById("summary-total-trend");
+    const summaryLiveTalents = document.getElementById("summary-live-talents");
+    const summaryTotalTalents = document.getElementById("summary-total-talents");
+    const summaryTodayViews = document.getElementById("summary-today-views");
+
+    const monitorGridEl = document.getElementById("monitor-grid");
+    const monitorListEl = document.getElementById("monitor-list");
+    const emptyStateEl = document.getElementById("empty-state");
+
+    const viewGridBtn = document.getElementById("view-grid");
+    const viewListBtn = document.getElementById("view-list");
+
+    // ===== ユーティリティ =====
+    function showError(msg) {
+      errorBanner.textContent = msg;
+      errorBanner.classList.add("visible");
+    }
+
+    function hideError() {
+      errorBanner.textContent = "";
+      errorBanner.classList.remove("visible");
+    }
+
+    function showSuccess(msg) {
+      successBanner.textContent = msg;
+      successBanner.classList.add("visible");
+      setTimeout(() => {
+        successBanner.classList.remove("visible");
+      }, 2500);
+    }
+
+    function roleLabelJa(roleType, isManager, isAdmin) {
+      if (roleType === "talent") return "タレントアカウント";
+      if (roleType === "staff") {
+        if (isManager && isAdmin) return "管理職（Admin権限あり）";
+        if (isManager) return "マネージャー / 社員";
+        if (isAdmin) return "社員（Admin権限あり）";
+        return "社員アカウント";
+      }
+      if (roleType === "executive") {
+        if (isAdmin) return "役員 / 社長（Admin）";
+        return "役員アカウント";
+      }
+      return "未設定アカウント";
+    }
+
+    function formatNumber(num) {
+      if (num === null || num === undefined || isNaN(num)) return "-";
+      return num.toLocaleString("ja-JP");
+    }
+
+    function formatDateTime(ts) {
+      if (!ts) return "-";
+      try {
+        if (ts.toDate) {
+          return ts.toDate().toLocaleString("ja-JP");
+        }
+        if (ts instanceof Date) {
+          return ts.toLocaleString("ja-JP");
+        }
+      } catch (e) {
+        console.warn("Failed to format timestamp", e);
+      }
+      return "-";
+    }
+
+    // trend: 差分をテキスト＋色付きで返す
+    function renderTrendText(diff) {
+      if (diff === null || diff === undefined || isNaN(diff)) {
+        return { text: "-", cls: "" };
+      }
+      if (diff === 0) {
+        return { text: "±0", cls: "" };
+      }
+      const sign = diff > 0 ? "+" : "";
+      return {
+        text: sign + diff.toLocaleString("ja-JP"),
+        cls: diff > 0 ? "trend-up" : "trend-down"
+      };
+    }
+
+    // プラットフォーム定義
+    const PLATFORM_DEFS = {
+      youtube:   { label: "YouTube",   css: "pf-youtube" },
+      twitch:    { label: "Twitch",    css: "pf-twitch" },
+      x:         { label: "X",         css: "pf-x" },
+      instagram: { label: "Instagram", css: "pf-instagram" },
+      tiktok:    { label: "TikTok",    css: "pf-tiktok" },
+      iriam:     { label: "IRIAM",     css: "pf-iriam" },
+      palmu:     { label: "palmu",     css: "pf-palmu" },
+      mirrativ:  { label: "Mirrativ",  css: "pf-mirrativ" },
+      mixch:     { label: "ミクチャ",  css: "pf-mixch" },
+    };
+
+    // ===== ナビゲーション =====
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+      window.location.href = "../login.html";
+    });
+
+    backDashboardBtn.addEventListener("click", () => {
+      window.location.href = "./dashboard.html";
+    });
+
+    backManagementBtn.addEventListener("click", () => {
+      window.location.href = "./management.html";
+    });
+
+    refreshHintBtn.addEventListener("click", () => {
+      showSuccess("各プラットフォームの API から Cloud Functions / バックエンドで定期取得 → Firestore liveStats に保存 → この画面は onSnapshot で自動反映、という想定です。");
+    });
+
+    // ===== ログインユーザー情報 =====
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "../login.html";
+        return;
+      }
+
+      try {
+        const ref = doc(db, "users", user.uid);
+        const snap = await getDoc(ref);
+
+        if (!snap.exists()) {
+          showError("ユーザー情報が登録されていません。管理者にお問い合わせください。");
+          return;
+        }
+
+        const data = snap.data();
+        const displayName = data.displayName || user.displayName || "No Name";
+        const roleType = data.roleType || "staff";
+        const isManager = !!data.isManager;
+        const isAdmin = !!data.isAdmin;
+
+        // タレントアカウントはアクセス不可
+        if (roleType === "talent") {
+          showError("このページはタレントアカウントからは利用できません。");
+          setTimeout(() => { window.location.href = "./dashboard.html"; }, 1500);
+          return;
+        }
+
+        userPill.style.visibility = "visible";
+        userNameEl.textContent = displayName;
+        userRoleEl.textContent = roleLabelJa(roleType, isManager, isAdmin);
+      } catch (err) {
+        console.error(err);
+        showError("ユーザー情報の取得中にエラーが発生しました。");
+      }
+    });
+
+    // ===== LiveStats 購読 =====
+    let liveDocs = []; // {id, data}
+    let prevTotalCurrent = 0;
+
+    const liveStatsRef = collection(db, "liveStats");
+    const liveStatsQuery = query(liveStatsRef, orderBy("talentName", "asc"));
+
+    onSnapshot(
+      liveStatsQuery,
+      (snapshot) => {
+        hideError();
+        liveDocs = snapshot.docs.map((d) => ({
+          id: d.id,
+          data: d.data(),
+        }));
+        renderAll();
+      },
+      (err) => {
+        console.error(err);
+        showError("ライブ統計情報の取得中にエラーが発生しました。");
+      }
+    );
+
+    // ===== フィルタイベント =====
+    searchInput.addEventListener("input", () => renderAll());
+    platformFilter.addEventListener("change", () => renderAll());
+    sortModeSelect.addEventListener("change", () => renderAll());
+
+    // 表示切替
+    viewGridBtn.addEventListener("click", () => {
+      viewGridBtn.classList.add("active");
+      viewListBtn.classList.remove("active");
+      monitorGridEl.style.display = "grid";
+      monitorListEl.style.display = "none";
+    });
+
+    viewListBtn.addEventListener("click", () => {
+      viewListBtn.classList.add("active");
+      viewGridBtn.classList.remove("active");
+      monitorGridEl.style.display = "none";
+      monitorListEl.style.display = "flex";
+    });
+
+    // ===== レンダリング =====
+    function renderAll() {
+      // フィルタ
+      const keyword = searchInput.value.trim().toLowerCase();
+      const pfFilter = platformFilter.value;
+      const sortMode = sortModeSelect.value;
+
+      let filtered = liveDocs.filter(({ id, data }) => {
+        const name = (data.talentName || "").toLowerCase();
+        const tid = (id || "").toLowerCase();
+
+        if (keyword) {
+          if (!name.includes(keyword) && !tid.includes(keyword)) {
+            return false;
+          }
+        }
+
+        if (pfFilter) {
+          const ps = data.platformStats || {};
+          if (!ps[pfFilter]) return false;
+        }
+
+        return true;
+      });
+
+      // ソート
+      if (sortMode === "current-desc") {
+        filtered = filtered.slice().sort((a, b) => {
+          const at = calcTotalCurrent(a.data);
+          const bt = calcTotalCurrent(b.data);
+          return bt - at;
+        });
+      } else if (sortMode === "name-asc") {
+        filtered = filtered.slice().sort((a, b) => {
+          const an = (a.data.talentName || "").toLowerCase();
+          const bn = (b.data.talentName || "").toLowerCase();
+          if (an < bn) return -1;
+          if (an > bn) return 1;
+          return 0;
+        });
+      }
+
+      // サマリー更新
+      updateSummary(filtered);
+
+      if (filtered.length === 0) {
+        monitorGridEl.innerHTML = "";
+        monitorListEl.innerHTML = "";
+        emptyStateEl.style.display = "block";
+        return;
+      }
+
+      emptyStateEl.style.display = "none";
+
+      // グリッド表示
+      const gridHtml = filtered
+        .map(({ id, data }) => renderTalentCardHtml(id, data))
+        .join("");
+      monitorGridEl.innerHTML = gridHtml;
+
+      // リスト表示は同じカードを縦並び
+      monitorListEl.innerHTML = filtered
+        .map(({ id, data }) => renderTalentCardHtml(id, data))
+        .join("");
+    }
+
+    function calcTotalCurrent(data) {
+      const ps = data.platformStats || {};
+      let total = 0;
+      Object.keys(ps).forEach((key) => {
+        const p = ps[key] || {};
+        const v = p.currentViewers;
+        if (typeof v === "number" && !isNaN(v)) {
+          total += v;
+        }
+      });
+      return total;
+    }
+
+    function calcTodayViewsTotal(docs) {
+      let total = 0;
+      let found = false;
+      docs.forEach(({ data }) => {
+        const v =
+          typeof data.todayTotalViews === "number"
+            ? data.todayTotalViews
+            : null;
+        if (v !== null) {
+          total += v;
+          found = true;
+        }
+      });
+      return found ? total : null;
+    }
+
+    function updateSummary(filtered) {
+      const totalTalents = liveDocs.length;
+      const todayViewsTotal = calcTodayViewsTotal(liveDocs);
+
+      // 総同接
+      let totalCurrent = 0;
+      let liveCount = 0;
+      liveDocs.forEach(({ data }) => {
+        const total = calcTotalCurrent(data);
+        totalCurrent += total;
+        if (total > 0 || data.isLive) {
+          liveCount += 1;
+        }
+      });
+
+      summaryTotalCurrent.textContent = formatNumber(totalCurrent);
+      summaryLiveTalents.textContent = liveCount.toString();
+      summaryTotalTalents.textContent = totalTalents.toString();
+
+      if (todayViewsTotal !== null) {
+        summaryTodayViews.textContent = formatNumber(todayViewsTotal);
+      } else {
+        summaryTodayViews.textContent = "-";
+      }
+
+      const diff = totalCurrent - prevTotalCurrent;
+      const trend = renderTrendText(diff);
+      summaryTotalTrend.textContent = trend.text;
+      summaryTotalTrend.className = trend.cls;
+      prevTotalCurrent = totalCurrent;
+    }
+
+    function renderTalentCardHtml(id, data) {
+      const name = data.talentName || "(no name)";
+      const isLiveFlag = !!data.isLive;
+      const ps = data.platformStats || {};
+      const updatedAt = data.lastUpdatedAt || data.updatedAt || null;
+
+      const totalCurrent = calcTotalCurrent(data);
+
+      // 「どれかのプラットフォームで currentViewers > 0」があれば live 判定
+      let hasPositive = false;
+      Object.keys(ps).forEach((key) => {
+        const v = ps[key]?.currentViewers;
+        if (typeof v === "number" && v > 0) {
+          hasPositive = true;
+        }
+      });
+      const isLive = isLiveFlag || hasPositive;
+
+      let liveCls = "live-pill offline";
+      let liveText = "offline";
+      if (isLive) {
+        liveCls = "live-pill live";
+        liveText = "LIVE";
+      }
+
+      // エラー状態（例: backendError フラグ）
+      if (data.backendError) {
+        liveCls = "live-pill error";
+        liveText = "ERROR";
+      }
+
+      // プラットフォーム行
+      const platformRows = Object.keys(PLATFORM_DEFS)
+        .filter((key) => ps[key])
+        .map((key) => {
+          const def = PLATFORM_DEFS[key];
+          const p = ps[key] || {};
+          const cv = typeof p.currentViewers === "number" ? p.currentViewers : null;
+          const subs =
+            typeof p.subscribers === "number"
+              ? p.subscribers
+              : typeof p.followers === "number"
+              ? p.followers
+              : null;
+          const totalViews =
+            typeof p.totalViews === "number" ? p.totalViews : null;
+
+          return `
+          <div class="platform-stat-row">
+            <div>
+              <span class="platform-chip ${def.css}">
+                <span class="platform-dot"></span>
+                ${def.label}
+              </span>
+            </div>
+            <div style="text-align:right;">
+              <div>
+                <strong>${cv !== null ? cv.toLocaleString("ja-JP") : "-"}</strong> 同接
+              </div>
+              <div>
+                ${subs !== null ? subs.toLocaleString("ja-JP") : "-"} フォロワー /
+                ${totalViews !== null ? totalViews.toLocaleString("ja-JP") : "-"} 再生
+              </div>
+            </div>
+          </div>
+        `;
+        })
+        .join("");
+
+      // 上部のプラットフォームバッジ（存在するプラットフォーム一覧）
+      const pfBadges = Object.keys(PLATFORM_DEFS)
+        .filter((key) => ps[key])
+        .map((key) => {
+          const def = PLATFORM_DEFS[key];
+          return `
+          <span class="platform-chip ${def.css}">
+            <span class="platform-dot"></span>${def.label}
+          </span>
+        `;
+        })
+        .join("");
+
+      return `
+        <article class="talent-live-card">
+          <div class="talent-live-header">
+            <div class="talent-main">
+              <div class="talent-live-name">${name}</div>
+              <div class="talent-live-id">${id}</div>
+              <div class="platform-badges">
+                ${pfBadges || '<span style="font-size:10px;color:var(--sl-muted);">紐付け済みプラットフォームがありません</span>'}
+              </div>
+            </div>
+            <div>
+              <div class="${liveCls}">
+                <span class="live-pill-dot"></span>
+                <span>${liveText}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="talent-live-body">
+            <div class="stat-block">
+              <div class="stat-label">総同時接続（全プラットフォーム）</div>
+              <div class="stat-main-value">${formatNumber(totalCurrent)}</div>
+              <div class="stat-sub-line">
+                <span>ライブ中プラットフォーム数: ${
+                  Object.keys(ps).filter((key) => {
+                    const v = ps[key]?.currentViewers;
+                    return typeof v === "number" && v > 0;
+                  }).length
+                }</span>
+              </div>
+              <div class="timestamp">
+                最終更新: ${formatDateTime(updatedAt)}
+              </div>
+            </div>
+
+            <div class="stat-block">
+              <div class="stat-label">プラットフォーム別 詳細</div>
+              ${platformRows || '<div style="font-size:11px;color:var(--sl-muted);margin-top:4px;">プラットフォーム別の統計情報がまだありません。</div>'}
+            </div>
+          </div>
+        </article>
+      `;
+    }
+  </script>
+</body>
+</html>

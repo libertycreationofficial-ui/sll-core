@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Star Little Luna - マイ面談・勤怠・シフト</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI",
+        "Hiragino Sans", "Yu Gothic", sans-serif;
+      background: #f5f7ff;
+      padding: 20px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+    h2 {
+      margin-top: 26px;
+      padding-left: 8px;
+      border-left: 5px solid #c382ff;
+      font-size: 16px;
+    }
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .top-right {
+      display: flex;
+      gap: 8px;
+    }
+    button {
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, #c382ff, #ff8ad8);
+      color: #fff;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    button.secondary {
+      background: #e1e4ff;
+      color: #333;
+    }
+    .section {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-top: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+    label {
+      display: block;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 6px 8px;
+      margin-top: 4px;
+      border-radius: 6px;
+      border: 1px solid #d0d4ea;
+      font-size: 13px;
+      box-sizing: border-box;
+      background: #fafbff;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #e0e3f0;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #f2f3ff;
+      font-weight: 600;
+    }
+    .small {
+      font-size: 12px;
+      color: #666;
+    }
+    .msg {
+      font-size: 12px;
+      margin-top: 6px;
+      color: #555;
+    }
+    .error { color: #d32f2f; }
+    .success { color: #0f9d58; }
+
+    .status-pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      color: #fff;
+    }
+    .status-pending { background: #ffb74d; }
+    .status-accepted { background: #4caf50; }
+    .status-rejected { background: #e53935; }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div>
+      <h1>🌙 Star Little Luna - マイページ（面談・勤怠・シフト）</h1>
+      <div class="small" id="userInfo">ログイン確認中...</div>
+    </div>
+    <div class="top-right">
+      <button id="backDashboardBtn" class="secondary">ダッシュボードへ</button>
+      <button id="logoutBtn" class="secondary">ログアウト</button>
+    </div>
+  </div>
+
+  <!-- ① 面談：新規予約 ＋ 自分への返答一覧 -->
+  <h2>① 面談予約と返答</h2>
+  <div class="section">
+    <div class="small">
+      マネージャー・社員への面談を予約できます。<br />
+      下に自分の面談履歴とステータス（保留／承認／却下）・返信が表示されます。
+    </div>
+
+    <label>希望日</label>
+    <input type="date" id="interviewDate" />
+
+    <label>希望時間</label>
+    <input type="time" id="interviewTime" />
+
+    <label>面談の内容・相談したいこと</label>
+    <textarea id="interviewReason" placeholder="例：今後の活動方針について相談したい、スケジュール調整など"></textarea>
+
+    <button id="sendInterviewBtn">面談をリクエストする</button>
+    <div id="interviewMsg" class="msg"></div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:18%;">希望日時</th>
+          <th style="width:36%;">内容</th>
+          <th style="width:12%;">ステータス</th>
+          <th style="width:34%;">運営からのメモ・返答</th>
+        </tr>
+      </thead>
+      <tbody id="meetingHistoryBody">
+        <tr><td colspan="4" class="small">面談履歴を読み込み中...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ② 勤怠：今日の打刻 ＋ 最近の履歴 -->
+  <h2>② 勤怠（出勤・退勤）</h2>
+  <div class="section">
+    <div class="small" id="attendanceToday">本日の勤怠を読み込み中...</div>
+    <button id="startWorkBtn">出勤</button>
+    <button id="endWorkBtn" class="secondary">退勤</button>
+    <div id="attendanceMsg" class="msg"></div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>日付</th>
+          <th>出勤</th>
+          <th>退勤</th>
+        </tr>
+      </thead>
+      <tbody id="attendanceHistoryBody">
+        <tr><td colspan="3" class="small">直近の勤怠履歴を読み込み中...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ③ 今月のシフト -->
+  <h2>③ 今月のシフト</h2>
+  <div class="section">
+    <div class="small">
+      マネージャーが登録した、あなたの今月のシフトです。
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>日付</th>
+          <th>開始</th>
+          <th>終了</th>
+        </tr>
+      </thead>
+      <tbody id="shiftTableBody">
+        <tr><td colspan="3" class="small">シフトを読み込み中...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ④ シフト希望 -->
+  <h2>④ シフト希望</h2>
+  <div class="section">
+    <div class="small">
+      希望シフトを運営に提出できます（複数日分を送信可能）。<br />
+      下に送信済みの希望とステータスが表示されます。
+    </div>
+
+    <label>希望日</label>
+    <input type="date" id="shiftWishDate" />
+
+    <label>希望時間帯</label>
+    <div style="display:flex; gap:8px;">
+      <div style="flex:1;">
+        <span class="small">開始</span>
+        <input type="time" id="shiftWishStart" />
+      </div>
+      <div style="flex:1;">
+        <span class="small">終了</span>
+        <input type="time" id="shiftWishEnd" />
+      </div>
+    </div>
+
+    <label>補足メモ（任意）</label>
+    <textarea id="shiftWishNote" placeholder="例：この日は21時までなら対応可能です"></textarea>
+
+    <button id="sendShiftWishBtn">シフト希望を送信する</button>
+    <div id="shiftWishMsg" class="msg"></div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:18%;">日付</th>
+          <th style="width:26%;">希望時間</th>
+          <th style="width:24%;">メモ</th>
+          <th style="width:16%;">ステータス</th>
+          <th style="width:16%;">作成日時</th>
+        </tr>
+      </thead>
+      <tbody id="shiftWishBody">
+        <tr><td colspan="5" class="small">送信済みのシフト希望を読み込み中...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ================== JS / Firebase ================== -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      setDoc,
+      getDoc,
+      addDoc,
+      collection,
+      serverTimestamp,
+      getDocs,
+      query,
+      where
+    } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+    // ---- Firebase config ----
+    const firebaseConfig = {
+      apiKey: "AIzaSyAtCdoQIc-WjKp_Jl1DpAPxHOSByE3mjNM",
+      authDomain: "lss-core-9ad4b.firebaseapp.com",
+      projectId: "lss-core-9ad4b",
+      storageBucket: "lss-core-9ad4b.firebasestorage.app",
+      messagingSenderId: "783909822598",
+      appId: "1:783909822598:web:7a7b7c5dd52e31fd01b107",
+      measurementId: "G-CSDMWDJN3S"
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    // ---- DOM ----
+    const userInfoEl            = document.getElementById("userInfo");
+    const backDashboardBtn      = document.getElementById("backDashboardBtn");
+    const logoutBtn             = document.getElementById("logoutBtn");
+
+    // 面談
+    const interviewDateEl       = document.getElementById("interviewDate");
+    const interviewTimeEl       = document.getElementById("interviewTime");
+    const interviewReasonEl     = document.getElementById("interviewReason");
+    const sendInterviewBtn      = document.getElementById("sendInterviewBtn");
+    const interviewMsgEl        = document.getElementById("interviewMsg");
+    const meetingHistoryBody    = document.getElementById("meetingHistoryBody");
+
+    // 勤怠
+    const attendanceTodayEl     = document.getElementById("attendanceToday");
+    const startWorkBtn          = document.getElementById("startWorkBtn");
+    const endWorkBtn            = document.getElementById("endWorkBtn");
+    const attendanceMsgEl       = document.getElementById("attendanceMsg");
+    const attendanceHistoryBody = document.getElementById("attendanceHistoryBody");
+
+    // シフト
+    const shiftTableBody        = document.getElementById("shiftTableBody");
+
+    // シフト希望
+    const shiftWishDateEl       = document.getElementById("shiftWishDate");
+    const shiftWishStartEl      = document.getElementById("shiftWishStart");
+    const shiftWishEndEl        = document.getElementById("shiftWishEnd");
+    const shiftWishNoteEl       = document.getElementById("shiftWishNote");
+    const sendShiftWishBtn      = document.getElementById("sendShiftWishBtn");
+    const shiftWishMsgEl        = document.getElementById("shiftWishMsg");
+    const shiftWishBody         = document.getElementById("shiftWishBody");
+
+    let currentUser = null;
+
+    function setMsg(el, text, type = "") {
+      el.textContent = text;
+      el.className = "msg";
+      if (type === "error")   el.classList.add("error");
+      if (type === "success") el.classList.add("success");
+    }
+
+    function formatTimestamp(ts) {
+      if (!ts || !ts.toDate) return "-";
+      const d = ts.toDate();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      const h = String(d.getHours()).padStart(2, "0");
+      const mm = String(d.getMinutes()).padStart(2, "0");
+      return `${y}/${m}/${day} ${h}:${mm}`;
+    }
+
+    // ---- Auth 状態 ----
+    onAuthStateChanged(auth, async (user) => {
+      // ここでは「ログインしてなくても画面は表示する」
+      if (!user) {
+        currentUser = null;
+        userInfoEl.textContent = "ログインしていません（機能を使うにはログインしてください）";
+        return;
+      }
+
+      currentUser = user;
+      userInfoEl.textContent =
+        `ログイン中: ${user.displayName || user.email || "ユーザー"}`;
+
+      await Promise.all([
+        loadMeetingHistory(),
+        loadTodayAttendance(),
+        loadAttendanceHistory(),
+        loadShiftsThisMonth(),
+        loadShiftWishes()
+      ]);
+    });
+
+    // 戻る＆ログアウト
+    backDashboardBtn.addEventListener("click", () => {
+      location.href = "dashboard.html";
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+      location.href = "login.html";
+    });
+
+    // ================= 面談 =================
+    sendInterviewBtn.addEventListener("click", async () => {
+      if (!currentUser) {
+        setMsg(interviewMsgEl, "ログインしていません。先にログインしてください。", "error");
+        return;
+      }
+      const date   = interviewDateEl.value;
+      const time   = interviewTimeEl.value;
+      const reason = interviewReasonEl.value.trim();
+
+      if (!date || !time || !reason) {
+        setMsg(interviewMsgEl, "希望日・時間・内容をすべて入力してください。", "error");
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "meetingRequests"), {
+          uid: currentUser.uid,
+          talentName: currentUser.displayName || currentUser.email || null,
+          date,
+          time,
+          reason,
+          status: "pending",
+          managerNote: "",
+          createdAt: serverTimestamp()
+        });
+        interviewDateEl.value = "";
+        interviewTimeEl.value = "";
+        interviewReasonEl.value = "";
+        setMsg(interviewMsgEl, "面談リクエストを送信しました。", "success");
+        await loadMeetingHistory();
+      } catch (e) {
+        console.error(e);
+        setMsg(interviewMsgEl, "面談リクエスト送信中にエラーが発生しました。", "error");
+      }
+    });
+
+    async function loadMeetingHistory() {
+      if (!currentUser) return;
+      try {
+        const q = query(
+          collection(db, "meetingRequests"),
+          where("uid", "==", currentUser.uid)
+        );
+        const snap = await getDocs(q);
+        const rows = [];
+        snap.forEach((docSnap) => {
+          rows.push(docSnap.data());
+        });
+
+        // 日付＋時間でざっくり降順ソート
+        rows.sort((a, b) => {
+          const keyA = (a.date || "") + " " + (a.time || "");
+          const keyB = (b.date || "") + " " + (b.time || "");
+          return keyA < keyB ? 1 : -1;
+        });
+
+        meetingHistoryBody.innerHTML = "";
+        if (rows.length === 0) {
+          meetingHistoryBody.innerHTML =
+            '<tr><td colspan="4" class="small">まだ面談リクエストはありません。</td></tr>';
+          return;
+        }
+
+        for (const d of rows) {
+          const tr = document.createElement("tr");
+
+          const tdDate = document.createElement("td");
+          tdDate.textContent = `${d.date || "-"} ${d.time || ""}`;
+
+          const tdReason = document.createElement("td");
+          tdReason.textContent = d.reason || "";
+
+          const tdStatus = document.createElement("td");
+          const pill = document.createElement("span");
+          pill.classList.add("status-pill");
+          const s = d.status || "pending";
+          if (s === "accepted") {
+            pill.classList.add("status-accepted");
+            pill.textContent = "承認";
+          } else if (s === "rejected") {
+            pill.classList.add("status-rejected");
+            pill.textContent = "却下";
+          } else {
+            pill.classList.add("status-pending");
+            pill.textContent = "保留";
+          }
+          tdStatus.appendChild(pill);
+
+          const tdNote = document.createElement("td");
+          tdNote.textContent = d.managerNote || "-";
+
+          tr.appendChild(tdDate);
+          tr.appendChild(tdReason);
+          tr.appendChild(tdStatus);
+          tr.appendChild(tdNote);
+          meetingHistoryBody.appendChild(tr);
+        }
+      } catch (e) {
+        console.error(e);
+        meetingHistoryBody.innerHTML =
+          '<tr><td colspan="4" class="small">面談履歴の取得中にエラーが発生しました。</td></tr>';
+      }
+    }
+
+    // ================= 勤怠 =================
+    async function loadTodayAttendance() {
+      if (!currentUser) return;
+      const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+      try {
+        const ref  = doc(db, "attendance", currentUser.uid, "records", today);
+        const snap = await getDoc(ref);
+        if (!snap.exists()) {
+          attendanceTodayEl.textContent = `本日の勤怠（${today}）：未登録`;
+        } else {
+          const d = snap.data();
+          attendanceTodayEl.textContent =
+            `本日の勤怠（${today}）：出勤 ${d.start || "-"} / 退勤 ${d.end || "-"}`;
+        }
+      } catch (e) {
+        console.error(e);
+        attendanceTodayEl.textContent = "本日の勤怠の取得中にエラーが発生しました。";
+      }
+    }
+
+    async function loadAttendanceHistory() {
+      if (!currentUser) return;
+      try {
+        const colRef = collection(db, "attendance", currentUser.uid, "records");
+        const snap   = await getDocs(colRef);
+        const items = [];
+        snap.forEach((docSnap) => {
+          const d = docSnap.data();
+          items.push({
+            date: docSnap.id,
+            start: d.start || "-",
+            end: d.end || "-"
+          });
+        });
+        // 日付逆順
+        items.sort((a, b) => (a.date < b.date ? 1 : -1));
+
+        attendanceHistoryBody.innerHTML = "";
+        if (items.length === 0) {
+          attendanceHistoryBody.innerHTML =
+            '<tr><td colspan="3" class="small">まだ勤怠の記録がありません。</td></tr>';
+          return;
+        }
+
+        for (const item of items.slice(0, 14)) { // 直近14日分
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${item.date}</td>
+            <td>${item.start}</td>
+            <td>${item.end}</td>
+          `;
+          attendanceHistoryBody.appendChild(tr);
+        }
+      } catch (e) {
+        console.error(e);
+        attendanceHistoryBody.innerHTML =
+          '<tr><td colspan="3" class="small">勤怠履歴の取得中にエラーが発生しました。</td></tr>';
+      }
+    }
+
+    startWorkBtn.addEventListener("click", async () => {
+      if (!currentUser) {
+        setMsg(attendanceMsgEl, "ログインしていません。先にログインしてください。", "error");
+        return;
+      }
+      const today = new Date().toISOString().slice(0, 10);
+      const now   = new Date().toLocaleTimeString("ja-JP", { hour12: false });
+
+      try {
+        const ref = doc(db, "attendance", currentUser.uid, "records", today);
+        await setDoc(ref, { start: now, updatedAt: serverTimestamp() }, { merge: true });
+        setMsg(attendanceMsgEl, "出勤を打刻しました。", "success");
+        await loadTodayAttendance();
+        await loadAttendanceHistory();
+      } catch (e) {
+        console.error(e);
+        setMsg(attendanceMsgEl, "出勤打刻中にエラーが発生しました。", "error");
+      }
+    });
+
+    endWorkBtn.addEventListener("click", async () => {
+      if (!currentUser) {
+        setMsg(attendanceMsgEl, "ログインしていません。先にログインしてください。", "error");
+        return;
+      }
+      const today = new Date().toISOString().slice(0, 10);
+      const now   = new Date().toLocaleTimeString("ja-JP", { hour12: false });
+
+      try {
+        const ref = doc(db, "attendance", currentUser.uid, "records", today);
+        await setDoc(ref, { end: now, updatedAt: serverTimestamp() }, { merge: true });
+        setMsg(attendanceMsgEl, "退勤を打刻しました。", "success");
+        await loadTodayAttendance();
+        await loadAttendanceHistory();
+      } catch (e) {
+        console.error(e);
+        setMsg(attendanceMsgEl, "退勤打刻中にエラーが発生しました。", "error");
+      }
+    });
+
+    // ================= シフト（今月） =================
+    async function loadShiftsThisMonth() {
+      if (!currentUser) return;
+      const ym = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+
+      try {
+        const colRef = collection(db, "shifts", currentUser.uid, "items");
+        const snap   = await getDocs(colRef);
+        const rows = [];
+        snap.forEach((docSnap) => {
+          const d = docSnap.data();
+          if (!d.date || !d.date.startsWith(ym)) return;
+          rows.push(d);
+        });
+        rows.sort((a, b) => (a.date > b.date ? 1 : -1));
+
+        shiftTableBody.innerHTML = "";
+        if (rows.length === 0) {
+          shiftTableBody.innerHTML =
+            '<tr><td colspan="3" class="small">今月のシフトはまだ登録されていません。</td></tr>';
+          return;
+        }
+
+        for (const r of rows) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${r.date}</td>
+            <td>${r.start || "-"}</td>
+            <td>${r.end || "-"}</td>
+          `;
+          shiftTableBody.appendChild(tr);
+        }
+      } catch (e) {
+        console.error(e);
+        shiftTableBody.innerHTML =
+          '<tr><td colspan="3" class="small">シフト取得中にエラーが発生しました。</td></tr>';
+      }
+    }
+
+    // ================= シフト希望 =================
+    sendShiftWishBtn.addEventListener("click", async () => {
+      if (!currentUser) {
+        setMsg(shiftWishMsgEl, "ログインしていません。先にログインしてください。", "error");
+        return;
+      }
+      const date  = shiftWishDateEl.value;
+      const start = shiftWishStartEl.value;
+      const end   = shiftWishEndEl.value;
+      const note  = shiftWishNoteEl.value.trim();
+
+      if (!date || !start || !end) {
+        setMsg(shiftWishMsgEl, "希望日と開始・終了時間は必須です。", "error");
+        return;
+      }
+
+      try {
+        const colRef = collection(db, "shiftRequests", currentUser.uid, "items");
+        await addDoc(colRef, {
+          date,
+          desiredStart: start,
+          desiredEnd: end,
+          note,
+          status: "requested",
+          createdAt: serverTimestamp()
+        });
+
+        shiftWishDateEl.value = "";
+        shiftWishStartEl.value = "";
+        shiftWishEndEl.value = "";
+        shiftWishNoteEl.value = "";
+        setMsg(shiftWishMsgEl, "シフト希望を送信しました。", "success");
+        await loadShiftWishes();
+      } catch (e) {
+        console.error(e);
+        setMsg(shiftWishMsgEl, "シフト希望送信中にエラーが発生しました。", "error");
+      }
+    });
+
+    async function loadShiftWishes() {
+      if (!currentUser) return;
+      try {
+        const colRef = collection(db, "shiftRequests", currentUser.uid, "items");
+        const snap   = await getDocs(colRef);
+        const rows = [];
+        snap.forEach((docSnap) => {
+          rows.push(docSnap.data());
+        });
+
+        // 日付降順
+        rows.sort((a, b) => {
+          const da = a.date || "";
+          const dbv = b.date || "";
+          return da < dbv ? 1 : -1;
+        });
+
+        shiftWishBody.innerHTML = "";
+        if (rows.length === 0) {
+          shiftWishBody.innerHTML =
+            '<tr><td colspan="5" class="small">まだシフト希望は送信されていません。</td></tr>';
+          return;
+        }
+
+        for (const r of rows) {
+          const statusLabel =
+            r.status === "approved" ? "承認"
+            : r.status === "rejected" ? "却下"
+            : "申請中";
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${r.date || "-"}</td>
+            <td>${(r.desiredStart || "-") + " 〜 " + (r.desiredEnd || "-")}</td>
+            <td>${r.note || "-"}</td>
+            <td>${statusLabel}</td>
+            <td>${formatTimestamp(r.createdAt)}</td>
+          `;
+          shiftWishBody.appendChild(tr);
+        }
+      } catch (e) {
+        console.error(e);
+        shiftWishBody.innerHTML =
+          '<tr><td colspan="5" class="small">シフト希望の取得中にエラーが発生しました。</td></tr>';
+      }
+    }
+  </script>
+</body>
+</html>

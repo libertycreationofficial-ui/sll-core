@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Star Little Luna CORE - Login</title>
+  <style>
+    :root {
+      --sl-bg: #f9fbff;
+      --sl-gradient-from: #f5ddff;
+      --sl-gradient-to: #cbe8ff;
+      --sl-primary: #c382ff;
+      --sl-primary-soft: #f0e2ff;
+      --sl-accent: #ff8ad8;
+      --sl-text: #2f3244;
+      --sl-muted: #8f93a8;
+      --sl-card: #ffffff;
+      --sl-border: #e4e6f3;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Hiragino Sans", "Yu Gothic", sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.9)),
+        linear-gradient(135deg, var(--sl-gradient-from), var(--sl-gradient-to));
+    }
+
+    .wrap {
+      max-width: 900px;
+      width: 100%;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 3fr 2fr;
+      gap: 24px;
+      align-items: center;
+    }
+
+    @media (max-width: 720px) {
+      .wrap {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* --- ロゴ画像 --- */
+    .hero-logo-img {
+      width: 300px;     /* ロゴの横幅。実物に合わせて微調整OK */
+      height: auto;
+      display: block;
+      margin-bottom: 18px;
+      filter: drop-shadow(0 6px 14px rgba(195,130,255,0.35));
+    }
+
+    .hero-title-jp {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--sl-text);
+    }
+
+    .hero-title-sub {
+      font-size: 14px;
+      color: var(--sl-muted);
+      margin-bottom: 18px;
+    }
+
+    .hero-text {
+      font-size: 13px;
+      color: var(--sl-muted);
+      line-height: 1.6;
+    }
+
+    .card {
+      background: var(--sl-card);
+      border-radius: 24px;
+      padding: 28px 26px;
+      box-shadow:
+        0 18px 45px rgba(166,184,255,0.40),
+        0 0 0 1px rgba(223,228,255,0.8);
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: var(--sl-text);
+    }
+
+    .card-sub {
+      font-size: 12px;
+      color: var(--sl-muted);
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-size: 13px;
+      display: block;
+      margin-bottom: 4px;
+      color: var(--sl-text);
+    }
+
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--sl-border);
+      background: #fdfdff;
+      color: var(--sl-text);
+      outline: none;
+      font-size: 14px;
+      margin-bottom: 12px;
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+
+    input:focus {
+      border-color: var(--sl-primary);
+      box-shadow: 0 0 0 2px rgba(195,130,255,0.25);
+      background: #ffffff;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px 0;
+      border-radius: 999px;
+      border: none;
+      margin-top: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--sl-primary), var(--sl-accent));
+      color: #ffffff;
+      box-shadow: 0 10px 25px rgba(196,129,255,0.55);
+      transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 30px rgba(196,129,255,0.65);
+    }
+
+    .error {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #e63946;
+      min-height: 1.2em;
+    }
+
+    .footer {
+      font-size: 10px;
+      color: var(--sl-muted);
+      margin-top: 14px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <!-- ★ ここにPNGロゴ（ファイルパスは自分の環境に合わせて変更） -->
+      <img src="assets/slllogo.png" class="hero-logo-img" alt="Star Little Luna Logo" />
+
+      <div class="hero-title-jp">貴方と描く物語の“裏側スタジオ”。</div>
+      <div class="hero-title-sub">Creator・VTuberの活動を支える、社内専用COREシステム。</div>
+      <p class="hero-text">
+        SLL-COREは、Star Little Luna に所属する<br />
+        VTuber / ライバー / クリエイター / マネージャー / スタッフ / 役員 / 社長が<br />
+        データとスケジュールを一元管理するための専用ポータルです。
+      </p>
+    </section>
+
+    <section class="card">
+      <div class="card-title">ログイン</div>
+      <div class="card-sub">社内から付与されたアカウント情報を入力してください。</div>
+
+      <!-- ★ ここに id="login-form" をつけて JS から拾う -->
+      <form id="login-form">
+        <label for="email">メールアドレス</label>
+        <input id="email" type="email" autocomplete="email" required />
+
+        <label for="password">パスワード</label>
+        <input id="password" type="password" autocomplete="current-password" required />
+
+        <button type="submit">SLL-CORE に入室する</button>
+
+        <div id="error" class="error"></div>
+      </form>
+
+      <div class="footer">
+        © Star Little Luna
+      </div>
+    </section>
+  </div>
+
+  <!-- ★ Firebase 初期化 + ログイン処理（FireStore/Firebase 前提） -->
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    // 将来 Firestore も使うなら↓を追加
+    // import { getFirestore } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAtCdoQIc-WjKp_Jl1DpAPxHOSByE3mjNM",
+      authDomain: "lss-core-9ad4b.firebaseapp.com",
+      projectId: "lss-core-9ad4b",
+      storageBucket: "lss-core-9ad4b.firebasestorage.app",
+      messagingSenderId: "783909822598",
+      appId: "1:783909822598:web:7a7b7c5dd52e31fd01b107",
+      measurementId: "G-CSDMWDJN3S"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    // const db = getFirestore(app); // Firestore使うとき用
+
+    const loginForm = document.getElementById("login-form");
+    const errorBox = document.getElementById("error");
+
+    if (loginForm) {
+      loginForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        errorBox.textContent = "";
+
+        const email = /** @type {HTMLInputElement} */(document.getElementById("email")).value.trim();
+        const password = /** @type {HTMLInputElement} */(document.getElementById("password")).value;
+
+        if (!email || !password) {
+          errorBox.textContent = "メールアドレスとパスワードを入力してください。";
+          return;
+        }
+
+        try {
+          // Firebase Auth でログイン
+          const cred = await signInWithEmailAndPassword(auth, email, password);
+          console.log("ログイン成功:", cred.user);
+
+          // TODO: ロール情報を Firestore などから取得して分岐も可能
+          // ひとまずダッシュボードに遷移
+          window.location.href = "html/dashboard.html";
+        } catch (err) {
+          console.error(err);
+          // エラー内容を簡易的にユーザー向けに整形
+          let msg = "ログインに失敗しました。メールアドレスとパスワードを確認してください。";
+          if (err.code === "auth/user-not-found") msg = "ユーザーが見つかりません。";
+          if (err.code === "auth/wrong-password") msg = "パスワードが違います。";
+          if (err.code === "auth/too-many-requests") msg = "試行回数が多すぎます。しばらく時間をおいてください。";
+          errorBox.textContent = msg;
+        }
+      });
+    }
+  </script>
+</body>
+</html>
